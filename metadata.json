@@ -1,0 +1,5 @@
+{
+  "name": "Scan And Know",
+  "description": "A modern QR-based room management and attendance tracking system for educational institutions.",
+  "requestFramePermissions": ["camera"]
+}
