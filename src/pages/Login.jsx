@@ -2,139 +2,181 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { QrCode } from "lucide-react";
+import { TextField, Button, IconButton, InputAdornment, Box } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import signUpApi from "../api/loginApi";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-
   const [loading, setLoading] = useState(false);
- 
-    const [formData, setFormData] = useState({
-      userName : "",
-      email: "",
-      password: "",
-    });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    userName: "",
+    email: "",
+    password: "",
+  });
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     const { VITE_LOGIN_ENDPOINT } = window.__ENV__ || {};
     const endpointUrl = VITE_LOGIN_ENDPOINT;
-    e.preventDefault(); // prevent page reload    
-
-    console.log("Full form data login:", formData);
 
     try {
       setLoading(true);
       const response = await signUpApi.post(endpointUrl, formData);
-      console.log("LOGIN API response:", response.data);
 
       if (response.data.status) {
-        alert("Login successful!");
         login();
-        navigate("/dashboard"); // redirect on success
+        navigate("/dashboard");
       } else {
         alert("Login failed: " + (response.data.message || "Invalid credentials"));
       }
-    } catch (error) {
-      console.error("API error:", error.response?.data || error.message);
-      alert(
-        "Login failed: " +
-          (error.response?.data?.message || "Network or server error")
-      );
+    } catch (err) {
+      console.error(err);
+      alert("Login failed: " + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
 
+  const emailValid =
+  !!formData.email &&
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+
+const canLogin = formData.userName && formData.password && emailValid;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <Box
+      minHeight="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bgcolor="#f9fafb"
+      p={2}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 border border-gray-100"
+        style={{
+          maxWidth: 400,
+          width: "100%",
+          padding: 32,
+          background: "#fff",
+          borderRadius: 32,
+          boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+        }}
       >
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg mx-auto mb-4">
-            <QrCode size={32} />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mt-2">Login to manage your workspace</p>
-        </div>
+        <Box textAlign="center" mb={4}>
+          <Box
+            width={64}
+            height={64}
+            bgcolor="primary.main"
+            borderRadius={4}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            mx="auto"
+            mb={2}
+          >
+            <QrCode size={32} color="white" />
+          </Box>
+          <h2 style={{ fontSize: 24, fontWeight: 700 }}>Welcome Back</h2>
+          <p style={{ color: "#6b7280", marginTop: 8 }}>
+            Login to manage your workspace
+          </p>
+        </Box>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              User Name
-            </label>
-            <input
-              type="text"
-              value={formData.userName}
-              onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-              placeholder="Your name"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="User Name"
+            variant="outlined"
+            fullWidth
+            value={formData.userName}
+            onChange={(e) =>
+              setFormData({ ...formData, userName: e.target.value })
+            }
+            margin="normal"
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-              placeholder="name@university.edu"
-              required
-            />
-          </div>
+          <TextField
+            label="Email Address"
+            variant="outlined"
+            type="email"
+            fullWidth
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            margin="normal"
+            required
+            error={!!formData.email && !emailValid}
+            helperText={
+              !!formData.email && !emailValid
+                ? "Please enter a valid email address"
+                : ""
+            }
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+          <TextField
+            label="Password"
+            variant="outlined"
+            type={showPassword ? "text" : "password"}
+            fullWidth
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            margin="normal"
+            required
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-          <div className="flex flex-col gap-4 mt-4">
-            <button
+          <Box display="flex" flexDirection="column" gap={2} mt={3}>
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={!canLogin || loading}
             >
               {loading ? "Signing In..." : "Sign In"}
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
-              onClick={() => navigate("/")} // go back to home
-              className="w-full py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all"
+              variant="outlined"
+              color="inherit"
+              fullWidth
+              onClick={() => navigate("/")}
             >
               Cancel
-            </button>
-          </div>
+            </Button>
+          </Box>
         </form>
 
-        <p className="text-center mt-8 text-gray-500">
+        <p style={{ textAlign: "center", marginTop: 16, color: "#6b7280" }}>
           Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-indigo-600 font-bold hover:underline"
-          >
+          <Link to="/signup" style={{ color: "#6366f1", fontWeight: "bold" }}>
             Sign Up
           </Link>
         </p>
       </motion.div>
-    </div>
+    </Box>
   );
 };
 

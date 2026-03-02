@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const Step2 = ({ formData, setFormData, setStep }) => {
-  const [preview, setPreview] = useState(formData.profileFile ? URL.createObjectURL(formData.profileFile) : null);
+  const [preview, setPreview] = useState(
+    formData.profileFile ? URL.createObjectURL(formData.profileFile) : null
+  );
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -19,12 +21,21 @@ const Step2 = ({ formData, setFormData, setStep }) => {
         Step 2: Upload Profile Picture
       </h2>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="w-full px-4 py-3 border rounded-xl mb-4"
-      />
+      <div className="relative w-full mb-4">
+        {formData.profileFile && (
+          <label className="absolute -top-3 left-3 text-xs text-gray-500 bg-white px-1">
+            {formData.profileFile.name}
+          </label>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className={`w-full px-4 py-3 border rounded-xl ${
+            formData.profileFile ? "border-indigo-600" : "border-gray-300"
+          }`}
+        />
+      </div>
 
       {preview && (
         <div className="mb-4 text-center">
@@ -41,7 +52,7 @@ const Step2 = ({ formData, setFormData, setStep }) => {
         <button
           type="button"
           onClick={() => setStep(1)}
-          className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all"
+          className="flex-1 py-4 rounded-xl font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-lg"
         >
           Back
         </button>
