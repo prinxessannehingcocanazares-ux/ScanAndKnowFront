@@ -91,7 +91,8 @@ useEffect(() => {
                 onClick={() => setIsEditing(!isEditing)}
                 className="ml-0 sm:ml-4 mt-2 sm:mt-0 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-1"
               >
-                <Edit2 size={16} /> Edit
+                <Edit2 size={16} />{" "}
+                {isEditing ? "Cancel Update" : "Update Information"}
               </button>
             </div>
           </div>
@@ -177,7 +178,7 @@ useEffect(() => {
                   className="w-full px-4 py-2 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
               </div>
-                {/* Last Name */}
+              {/* Last Name */}
               <div className="space-y-1 sm:space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700">
                   Last Name

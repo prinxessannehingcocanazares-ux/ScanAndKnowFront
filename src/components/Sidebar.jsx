@@ -1,12 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, User, Calendar, DoorOpen, ClipboardCheck, QrCode, FileText, LogOut, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext"; 
-import { mockUser } from "../lib/mockData";
+import getUserById from '../api/getUserByIdApi';
 import cn from '../utility/cn';
 const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
+   const [userDetails, setUserDetails] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const { VITE_GETUSERBYID_ENDPOINT } = window.__ENV__ || {};
+    
+      useEffect(() => {
+        if (!user?.id) return;
+    
+        const fetchUser = async () => {
+          try {
+            setLoading(true);
+            const response = await getUserById.post(
+              `${VITE_GETUSERBYID_ENDPOINT}?id=${user.id}`
+            );
+            setUserDetails(response.data);
+          } catch (error) {
+            console.error("Error fetching user:", error);
+          } finally {
+            setLoading(false);
+          }
+        };
+    
+        fetchUser();
+      }, [user]);
+
   const location = useLocation();
 
   const menuItems = [
@@ -74,9 +99,10 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 p-2 mb-4">
-            <img src={mockUser?.profilePicture} alt="Profile" className="w-10 h-10 rounded-full border-2 border-indigo-100" />
+            <img src={userDetails?.profilePicture} alt="Profile" className="w-10 h-10 rounded-full border-2 border-indigo-100" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user?.fullName}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{userDetails?.firstName}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{userDetails?.lastName}</p>
               <p className="text-xs text-gray-500 truncate capitalize">{user?.role}</p>
             </div>
           </div>

@@ -1,13 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Bell, User, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { mockUser } from "../lib/mockData";
+import getUserById from "../api/getUserByIdApi";
+
 
 const Header = ({ title, onMenuClick }) => {
   const { user, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const [userDetails, setUserDetails] = useState(null);
+      const [loading, setLoading] = useState(false);
+    
+  const { VITE_GETUSERBYID_ENDPOINT } = window.__ENV__ || {};
+  
+    useEffect(() => {
+      if (!user?.id) return;
+  
+      const fetchUser = async () => {
+        try {
+          setLoading(true);
+          const response = await getUserById.post(
+            `${VITE_GETUSERBYID_ENDPOINT}?id=${user.id}`
+          );
+          setUserDetails(response.data);
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchUser();
+    }, [user]);
 
   return (
     <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-30">
@@ -37,15 +63,15 @@ const Header = ({ title, onMenuClick }) => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-3 p-1 rounded-xl hover:bg-gray-50 transition-all"
           >
-            {user?.profilePicture ? (
+            {userDetails?.profilePicture ? (
               <img
-                src={mockUser.profilePicture}
+                src={userDetails?.profilePicture}
                 alt="Profile"
                 className="w-8 h-8 rounded-full border border-gray-200 object-cover"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                {mockUser?.fullName
+                {userDetails?.firstName
                   ?.split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -54,10 +80,10 @@ const Header = ({ title, onMenuClick }) => {
 
             <div className="text-left hidden md:block">
               <p className="text-xs font-bold text-gray-900 leading-none">
-                {mockUser?.fullName}
+                {userDetails?.firstName}
               </p>
               <p className="text-[10px] text-gray-500 capitalize">
-                {mockUser?.role}
+                {user?.role}
               </p>
             </div>
           </button>
