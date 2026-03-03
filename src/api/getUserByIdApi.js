@@ -9,19 +9,19 @@ const baseURL = isTest
   ? VITE_API_URL_TEST
   : VITE_API_URL_PROD;
 
-const logInApi = axios.create({
+const getUserById = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-logInApi.interceptors.request.use((config) => {
+getUserById.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside login api Request URL:", fullUrl);
+  console.log("inside etuserbyid api Request URL:", fullUrl);
   return config;
 });
 
 
 
-export default logInApi;
+export default getUserById;

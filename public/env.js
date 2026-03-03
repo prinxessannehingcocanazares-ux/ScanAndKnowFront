@@ -1,5 +1,5 @@
 window.__ENV__ = {
-  VITE_IS_TEST: "false",
+  VITE_IS_TEST: "true",
 
   // Base URLS for API
   VITE_API_URL_TEST: "https://localhost:7236",
@@ -8,4 +8,5 @@ window.__ENV__ = {
   // Endpoint URLS
   VITE_SIGNUP_ENDPOINT: "/api/User/SignUp",
   VITE_LOGIN_ENDPOINT: "/api/User/Login",
+  VITE_GETUSERBYID_ENDPOINT: "/api/User/GetUserById", 
 }

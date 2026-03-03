@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { QrCode } from "lucide-react";
 import { TextField, Button, IconButton, InputAdornment, Box } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import signUpApi from "../api/loginApi";
+import logInApi from "../api/loginApi";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
@@ -26,10 +26,14 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const response = await signUpApi.post(endpointUrl, formData);
+      const response = await logInApi.post(endpointUrl, formData);
+
+      console.log("Login response:", response.data);
 
       if (response.data.status) {
-        login();
+              const { status, ...userData } = response.data;
+
+        login(userData);
         navigate("/dashboard");
       } else {
         alert("Login failed: " + (response.data.message || "Invalid credentials"));
