@@ -1,9 +1,8 @@
-import React from "react";
-import TextField from "@mui/material/TextField";
+import {TextField, MenuItem} from "@mui/material";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
-const Step1 = ({ formData, setFormData, setStep }) => {
+const Step1 = ({ formData, setFormData, setStep, departments, positions }) => {
   const { firstName, lastName, contactNumber, department, position } = formData;
   const canProceed =
     firstName && lastName && contactNumber && department && position;
@@ -54,23 +53,41 @@ const Step1 = ({ formData, setFormData, setStep }) => {
           }}
         />
         <TextField
+          select
           label="Department"
           variant="outlined"
           fullWidth
-          value={department}
+          value={formData.department}
           onChange={(e) =>
             setFormData({ ...formData, department: e.target.value })
           }
-        />
+        >
+          <MenuItem value="">Select Department</MenuItem>
+
+          {departments?.map((dept) => (
+            <MenuItem key={dept.id} value={dept.id}>
+              {dept.departmentName}
+            </MenuItem>
+          ))}
+        </TextField>
         <TextField
+          select
           label="Position"
           variant="outlined"
           fullWidth
-          value={position}
+          value={formData.position}
           onChange={(e) =>
             setFormData({ ...formData, position: e.target.value })
           }
-        />
+        >
+          <MenuItem value="">Select Position</MenuItem>
+
+          {positions?.map((pos) => (
+            <MenuItem key={pos.id} value={pos.id}>
+              {pos.title}
+            </MenuItem>
+          ))}
+        </TextField>
 
         <Button
           variant="contained"

@@ -1,14 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Step1 from "./subPages/Step1";
 import Step2 from "./subPages/Step2";
 import Step3 from "./subPages/Step3";
 import signUpApi from "../api/signUpApi";
+import getDepartments from "../api/getDepartments";
+import getPositions from "../api/getPositions";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [departments, setDepartments] = useState([]);
+  const [positions, setPositions] = useState([]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const { VITE_GETDEPARTMENTS_ENDPOINT } = window.__ENV__ || {};
+        const response = await getDepartments.post(
+          VITE_GETDEPARTMENTS_ENDPOINT,
+        );
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    const fetchPositions = async () => {
+      try {
+        const { VITE_GETPOSITIONS_ENDPOINT } = window.__ENV__ || {};
+        const response = await getPositions.post(VITE_GETPOSITIONS_ENDPOINT);
+        setPositions(response.data);
+      } catch (error) {
+        console.error("Error fetching positions:", error);
+      }
+    };
+    fetchPositions();
+  }, []);
+  
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,43 +57,43 @@ const Signup = () => {
   });
 
   const handleSubmit = async () => {
-  const { VITE_SIGNUP_ENDPOINT } = window.__ENV__ || {};
-  const endpointUrl = VITE_SIGNUP_ENDPOINT;
+    const { VITE_SIGNUP_ENDPOINT } = window.__ENV__ || {};
+    const endpointUrl = VITE_SIGNUP_ENDPOINT;
 
-  try {
-    const formToSend = new FormData();
-    formToSend.append("firstName", formData.firstName);
-    formToSend.append("lastName", formData.lastName);
-    formToSend.append("contactNumber", formData.contactNumber);
-    formToSend.append("department", formData.department);
-    formToSend.append("position", formData.position);
-    formToSend.append("userName", formData.userName);
-    formToSend.append("email", formData.email);
-    formToSend.append("password", formData.password);
-    formToSend.append("profilePicture", formData.profileFile); // <-- File object from Step2
+    try {
+      const formToSend = new FormData();
+      formToSend.append("firstName", formData.firstName);
+      formToSend.append("lastName", formData.lastName);
+      formToSend.append("contactNumber", formData.contactNumber);
+      formToSend.append("department", formData.department);
+      formToSend.append("position", formData.position);
+      formToSend.append("userName", formData.userName);
+      formToSend.append("email", formData.email);
+      formToSend.append("password", formData.password);
+      formToSend.append("profilePicture", formData.profileFile); // <-- File object from Step2
 
-    const response = await signUpApi.post(endpointUrl, formToSend, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+      const response = await signUpApi.post(endpointUrl, formToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    console.log("API response:", response.data);
+      console.log("API response:", response.data);
 
-    if (response.data.status) {
-      alert("Signup successful!");
-      navigate("/login");
-    } else {
-      alert("Signup failed: " + (response.data.message || "Unknown error"));
+      if (response.data.status) {
+        alert("Signup successful!");
+        navigate("/login");
+      } else {
+        alert("Signup failed: " + (response.data.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("API error:", error.response?.data || error.message);
+      alert(
+        "Signup failed: " +
+          (error.response?.data?.message || "Network or server error"),
+      );
     }
-  } catch (error) {
-    console.error("API error:", error.response?.data || error.message);
-    alert(
-      "Signup failed: " +
-        (error.response?.data?.message || "Network or server error")
-    );
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -73,6 +107,8 @@ const Signup = () => {
             formData={formData}
             setFormData={setFormData}
             setStep={setStep}
+            departments={departments}
+            positions={positions}
           />
         )}
         {step === 2 && (
