@@ -11,7 +11,6 @@ const Section = () => {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Weekly Schedule</h2>
           <p className="text-sm sm:text-base text-gray-500">Manage and view your teaching sections.</p>
         </div>
         <button 

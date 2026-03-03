@@ -8,7 +8,7 @@ import AboutUs from './pages/AboutUs';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import Section from './pages/Section';
+import WeeklySchedule from './pages/WeeklySchedule';
 import Rooms from './pages/Rooms';
 import QRScanner from './pages/QRScanner';
 import Attendance from './pages/Attendance';
@@ -55,7 +55,7 @@ export default function App() {
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute title="Dashboard"><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute title="My Profile"><Profile /></ProtectedRoute>} />
-          <Route path="/section" element={<ProtectedRoute title="Weekly Schedule"><Section /></ProtectedRoute>} />
+          <Route path="/weeklyschedule" element={<ProtectedRoute title="Weekly Schedule"><WeeklySchedule /></ProtectedRoute>} />
           <Route path="/rooms" element={<ProtectedRoute title="Room Management"><Rooms /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute title="Attendance Logs"><Attendance /></ProtectedRoute>} />
           <Route path="/qr-scanner" element={<ProtectedRoute title="QR Scanner"><QRScanner /></ProtectedRoute>} />

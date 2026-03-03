@@ -5,7 +5,6 @@ import {mockAttendance} from '../lib/mockData'; // adjust path according to your
 const Attendance = () => (
   <div className="p-4 sm:p-8">
     <div className="mb-8">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Attendance Logs</h2>
       <p className="text-sm sm:text-base text-gray-500">Track your room usage and session history.</p>
     </div>
 

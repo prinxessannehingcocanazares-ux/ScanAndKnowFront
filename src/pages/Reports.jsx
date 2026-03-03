@@ -34,7 +34,6 @@ const Reports = () => {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Teacher Reports</h2>
           <p className="text-sm sm:text-base text-gray-500">View and manage maintenance or facility reports.</p>
         </div>
         <button className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 text-sm">

@@ -23,15 +23,15 @@ export const mockSchedules = [
   { id: 's2', day: 'Tuesday', time: '01:00 PM - 03:00 PM', room: 'Lecture Hall A', subject: 'Algorithms' },
   { id: 's3', day: 'Wednesday', time: '10:00 AM - 12:00 PM', room: 'Lab 102', subject: 'Operating Systems' },
   { id: 's4', day: 'Thursday', time: '02:00 PM - 04:00 PM', room: 'Seminar Room 1', subject: 'Database Systems' },
-  { id: 's5', day: 'Friday', time: '09:00 AM - 11:00 AM', room: 'Lab 101', subject: 'Web Development' },
+  { id: 's5', day: 'Friday', time: '09:00 AM - 11:00 PM', room: 'Lab 101', subject: 'Web Development' },
 ];
 
 export const mockRooms = [
-  { id: '101', name: 'Lab 101', status: 'Available', capacity: 30 },
-  { id: '102', name: 'Lecture Hall A', status: 'Occupied', capacity: 100 },
-  { id: '103', name: 'Conference Room', status: 'Available', capacity: 15 },
-  { id: '104', name: 'Lab 102', status: 'Maintenance', capacity: 25 },
-  { id: '105', name: 'Seminar Room 1', status: 'Occupied', capacity: 40 },
+  { id: '101', name: 'Lab 101', roomId: 's1', department: 'College of Criminal Justice Education', status: 'Available', capacity: 30 },
+  { id: '102', name: 'Lecture Hall A', roomId: 's2', department: 'College of Criminal Justice Education', status: 'Occupied', capacity: 100 },
+  { id: '103', name: 'Conference Room', roomId: 's3', department: 'College of Information Technology', status: 'Available', capacity: 15 },
+  { id: '104', name: 'Lab 102', roomId: 's4', department: 'College of Information Technology', status: 'Maintenance', capacity: 25 },
+  { id: '105', name: 'Seminar Room 1', roomId: 's5', department: 'College of Nursing and Allied Health', status: 'Occupied', capacity: 40 },
 ];
 
 export const mockAttendance = [
