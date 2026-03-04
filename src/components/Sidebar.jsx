@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { icon: DoorOpen, label: "Rooms", path: "/rooms" },
     { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
     { icon: QrCode, label: "QR Scanner", path: "/qr-scanner" },
-    { icon: FileText, label: "Teacher Reports", path: "/reports" },
+    // { icon: FileText, label: "Teacher Reports", path: "/reports" },
   ];
 
   return (

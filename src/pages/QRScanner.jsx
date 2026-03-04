@@ -19,6 +19,10 @@ const QRScanner = () => {
     severity: "success", // success | error | info | warning
   });
 
+  const handleCloseSnackbar = () => {
+  setSnackbar((prev) => ({ ...prev, open: false }));
+};
+
   useEffect(() => {
     let scanner = null;
 

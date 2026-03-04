@@ -12,4 +12,5 @@ window.__ENV__ = {
   VITE_GETDEPARTMENTS_ENDPOINT: "/api/User/GetDepartments",
   VITE_GETPOSITIONS_ENDPOINT: "/api/User/GetPositions",
   VITE_GETROOMS_ENDPOINT: "/api/User/GetRooms",
+  VITE_CREATESCHEDULE_ENDPOINT: "/api/User/CreateSchedule",
 }

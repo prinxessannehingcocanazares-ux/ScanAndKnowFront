@@ -2,16 +2,13 @@ import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { mockSchedules } from "../lib/mockData";
+import getRooms from "../api/getRooms";
+import { Snackbar, Alert } from "@mui/material";
 
 const LazyCalendar = lazy(() => import("../pages/subPages/LazyCalendar"));
 
-const Schedule = () => {
-
-  const ROOMS = ["Room 101", "Room 102", "Room 201", "Lab 1"];
-
-  const calendarRef = useRef(null);
-  const [currentView, setCurrentView] = useState("timeGridWeek");
-
+const Schedule = ({ user }) => {
+  const [rooms, setRooms] = useState([]);
   const [schedules, setSchedules] = useState(
     mockSchedules.map((s) => {
       const start = parseTimeSlotToDate(s.day, s.time);
@@ -28,9 +25,8 @@ const Schedule = () => {
       };
     })
   );
-
+  const [currentView, setCurrentView] = useState("timeGridWeek");
   const [showAdd, setShowAdd] = useState(false);
-
   const [formData, setFormData] = useState({
     subject: "",
     day: "Monday",
@@ -40,73 +36,125 @@ const Schedule = () => {
     repeatWeekly: false,
   });
 
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, open: false }));
+
+  const calendarRef = useRef(null);
+
+  // Fetch rooms (optional for now)
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const { VITE_GETROOMS_ENDPOINT } = window.__ENV__ || {};
+        const response = await getRooms.post(VITE_GETROOMS_ENDPOINT);
+        setRooms(response.data);
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: error.response?.data?.message || "Failed to fetch rooms",
+          severity: "error",
+        });
+      }
+    };
+    fetchRooms();
+  }, []);
+
+  // Switch calendar view
   useEffect(() => {
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) calendarApi.changeView(currentView);
   }, [currentView]);
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
-  const { subject, day, startTime, endTime, repeatWeekly, room } = formData;
+  // Handle schedule submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { subject, day, startTime, endTime, repeatWeekly } = formData;
 
-  if (!subject) return alert("Please enter a subject");
-
-  const startDate = parseTimeSlotToDate(day, startTime);
-  const endDate = parseTimeSlotToDate(day, endTime);
-
-  let roomAssigned = room;
-
-  if (room) {
-    const available = isRoomAvailable(day, startDate, endDate, room, schedules);
-    if (!available) {
-      alert(`Room ${room} is already booked at this time!`);
-      roomAssigned = ""; // clear room if not available
+    if (!subject) {
+      setSnackbar({
+        open: true,
+        message: "Please enter a subject",
+        severity: "warning",
+      });
+      return;
     }
-  }
 
-  let newEvent = {
-    id: Math.random().toString(36).substr(2, 9),
-    title: subject,
-    room: roomAssigned, // assign only if available
+    const payload = {
+      schedule_subject: subject,
+      schedule_day_of_week: day,
+      schedule_start_time: startTime + ":00",
+      schedule_end_time: endTime + ":00",
+      schedule_repeat_weekly: repeatWeekly,
+      schedule_user_id: user?.id || null,
+      schedule_room_id: null, // no room yet
+    };
+
+    try {
+      const { VITE_CREATESCHEDULE_ENDPOINT } = window.__ENV__ || {};
+      const response = await fetch(VITE_CREATESCHEDULE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to save schedule");
+
+      const savedSchedule = await response.json();
+
+      const startDate = parseTimeSlotToDate(
+        savedSchedule.schedule_day_of_week,
+        savedSchedule.schedule_start_time
+      );
+      const endDate = parseTimeSlotToDate(
+        savedSchedule.schedule_day_of_week,
+        savedSchedule.schedule_end_time
+      );
+
+      setSchedules((prev) => [
+        ...prev,
+        {
+          id: savedSchedule.schedule_id,
+          title: savedSchedule.schedule_subject,
+          day: savedSchedule.schedule_day_of_week,
+          start: startDate,
+          end: endDate,
+          room: null,
+          rrule: savedSchedule.schedule_repeat_weekly
+            ? { freq: "weekly" }
+            : null,
+        },
+      ]);
+
+      setShowAdd(false);
+      setFormData({
+        subject: "",
+        day: "Monday",
+        room: "",
+        startTime: "09:00",
+        endTime: "10:00",
+        repeatWeekly: false,
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Schedule saved successfully!",
+        severity: "success",
+      });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || "Failed to save schedule",
+        severity: "error",
+      });
+    }
   };
 
-  if (repeatWeekly) {
-    newEvent.rrule = {
-      freq: "weekly",
-      dtstart: startDate.toISOString(),
-    };
-    newEvent.duration = {
-      hours: (endDate - startDate) / (1000 * 60 * 60),
-    };
-  } else {
-    newEvent.start = startDate;
-    newEvent.end = endDate;
-  }
-
-  setSchedules([...schedules, newEvent]);
-  setShowAdd(false);
-
-  setFormData({
-    subject: "",
-    day: "Monday",
-    room: "",
-    startTime: "09:00",
-    endTime: "10:00",
-    repeatWeekly: false,
-  });
-};
-
- const getAvailableRooms = () => {
-  const { day, startTime, endTime } = formData;
-
-  const startDate = parseTimeSlotToDate(day, startTime);
-  const endDate = parseTimeSlotToDate(day, endTime);
-
-  return ROOMS.map((room) => ({
-    name: room,
-    available: isRoomAvailable(day, startDate, endDate, room, schedules),
-  }));
-};
   return (
     <div className="p-4 sm:p-8">
       {/* Header */}
@@ -131,9 +179,7 @@ const Schedule = () => {
             key={view}
             onClick={() => setCurrentView(view)}
             className={`px-4 py-2 rounded-xl font-bold ${
-              currentView === view
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100"
+              currentView === view ? "bg-indigo-600 text-white" : "bg-gray-100"
             }`}
           >
             {view === "timeGridDay"
@@ -184,39 +230,35 @@ const Schedule = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-8"
             >
-              <h3 className="text-xl font-bold mb-6">
-                Add New Schedule
-              </h3>
+              <h3 className="text-xl font-bold mb-6">Add New Schedule</h3>
 
               <form className="space-y-4" onSubmit={handleSubmit}>
-  {/* Subject */}
-  <input
-    type="text"
-    placeholder="Subject Name"
-    value={formData.subject}
-    onChange={(e) =>
-      setFormData({ ...formData, subject: e.target.value })
-    }
-    className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
-  />
+                <input
+                  type="text"
+                  placeholder="Subject Name"
+                  value={formData.subject}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subject: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
+                />
 
-  {/* Day and Room */}
-  <div className="grid grid-cols-2 gap-4">
-    <select
-      value={formData.day}
-      onChange={(e) =>
-        setFormData({ ...formData, day: e.target.value })
-      }
-      className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
-    >
-      <option>Monday</option>
-      <option>Tuesday</option>
-      <option>Wednesday</option>
-      <option>Thursday</option>
-      <option>Friday</option>
-    </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <select
+                    value={formData.day}
+                    onChange={(e) =>
+                      setFormData({ ...formData, day: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
+                  >
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                  </select>
 
-   <select
+                 <select
   value={formData.room}
   onChange={(e) =>
     setFormData({ ...formData, room: e.target.value })
@@ -225,91 +267,108 @@ const Schedule = () => {
 >
   <option value="">Select Room (optional)</option>
 
-  {getAvailableRooms().map((room) => (
+  {rooms.map((room) => (
     <option
-      key={room.name}
-      value={room.name}
-      disabled={!room.available}
+      key={room.roomId} // unique key
+      value={room.roomId} // save roomId if needed
     >
-      {room.name} {room.available ? "" : " (Booked)"}
+      {room.roomCode} {/* display readable name */}
     </option>
   ))}
 </select>
-  </div>
+                </div>
 
-  {/* Start and End Time */}
-  <div className="grid grid-cols-2 gap-4">
-    <input
-      type="time"
-      value={formData.startTime}
-      onChange={(e) =>
-        setFormData({ ...formData, startTime: e.target.value })
-      }
-      className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
-    />
-    <input
-      type="time"
-      value={formData.endTime}
-      onChange={(e) =>
-        setFormData({ ...formData, endTime: e.target.value })
-      }
-      className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
-    />
-  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
+                  />
+                  <input
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
+                  />
+                </div>
 
-  {/* Repeat Weekly */}
-  <div className="flex items-center gap-2">
-    <input
-      type="checkbox"
-      checked={formData.repeatWeekly}
-      onChange={(e) =>
-        setFormData({ ...formData, repeatWeekly: e.target.checked })
-      }
-      id="repeatWeekly"
-    />
-    <label htmlFor="repeatWeekly" className="text-sm font-medium">
-      Repeat Weekly
-    </label>
-  </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.repeatWeekly}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        repeatWeekly: e.target.checked,
+                      })
+                    }
+                    id="repeatWeekly"
+                  />
+                  <label htmlFor="repeatWeekly" className="text-sm font-medium">
+                    Repeat Weekly
+                  </label>
+                </div>
 
-  {/* Submit */}
-  <button
-    type="submit"
-    className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold"
-  >
-    Add Schedule
-  </button>
-</form>
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold"
+                >
+                  Add Schedule
+                </button>
+              </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
 
+// Utils
 function parseTimeSlotToDate(day, time) {
-  const dayMap = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5 };
+  const dayMap = {
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+  };
   const today = new Date();
-  const nextMonday = new Date(
-    today.setDate(today.getDate() - today.getDay() + 1)
-  );
+  const nextMonday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
   const date = new Date(nextMonday);
   date.setDate(date.getDate() + (dayMap[day] - 1));
-
   const [hours, minutes] = time.split(":").map(Number);
   date.setHours(hours, minutes, 0, 0);
-
   return date;
 }
 
 function isRoomAvailable(day, startDate, endDate, room, schedules) {
   return !schedules.some((s) => {
     if (!s.room || s.day !== day || s.room !== room) return false;
-
     const existingStart = s.start instanceof Date ? s.start : new Date(s.start);
     const existingEnd = s.end instanceof Date ? s.end : new Date(s.end);
-
     return startDate < existingEnd && endDate > existingStart;
   });
 }
