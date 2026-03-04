@@ -18,7 +18,6 @@ const logInApi = axios.create({
 
 logInApi.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside login api Request URL:", fullUrl);
   return config;
 });
 

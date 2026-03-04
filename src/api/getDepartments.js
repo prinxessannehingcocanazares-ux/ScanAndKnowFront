@@ -18,7 +18,6 @@ const getDepartments = axios.create({
 
 getDepartments.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside getDepartments api Request URL:", fullUrl);
   return config;
 });
 

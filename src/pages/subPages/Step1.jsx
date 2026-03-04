@@ -65,8 +65,8 @@ const Step1 = ({ formData, setFormData, setStep, departments, positions }) => {
           <MenuItem value="">Select Department</MenuItem>
 
           {departments?.map((dept) => (
-            <MenuItem key={dept.id} value={dept.id}>
-              {dept.departmentName}
+            <MenuItem key={dept.departmentId} value={dept.departmentId}>
+              {dept.departmentCollegeName}
             </MenuItem>
           ))}
         </TextField>
@@ -83,8 +83,8 @@ const Step1 = ({ formData, setFormData, setStep, departments, positions }) => {
           <MenuItem value="">Select Position</MenuItem>
 
           {positions?.map((pos) => (
-            <MenuItem key={pos.id} value={pos.id}>
-              {pos.title}
+            <MenuItem key={pos.positionId} value={pos.positionId}>
+              {pos.positionTitle}
             </MenuItem>
           ))}
         </TextField>

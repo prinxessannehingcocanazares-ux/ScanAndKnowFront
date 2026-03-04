@@ -5,9 +5,7 @@ const { VITE_IS_TEST, VITE_API_URL_TEST, VITE_API_URL_PROD } =
 
 const isTest = VITE_IS_TEST === "true";
 
-const baseURL = isTest
-  ? VITE_API_URL_TEST
-  : VITE_API_URL_PROD;
+const baseURL = isTest ? VITE_API_URL_TEST : VITE_API_URL_PROD;
 
 const getUserById = axios.create({
   baseURL,
@@ -18,10 +16,7 @@ const getUserById = axios.create({
 
 getUserById.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside getuserbyid api Request URL:", fullUrl);
   return config;
 });
-
-
 
 export default getUserById;

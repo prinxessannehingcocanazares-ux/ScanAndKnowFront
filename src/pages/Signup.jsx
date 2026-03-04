@@ -7,12 +7,16 @@ import Step3 from "./subPages/Step3";
 import signUpApi from "../api/signUpApi";
 import getDepartments from "../api/getDepartments";
 import getPositions from "../api/getPositions";
+import { Snackbar, Alert } from "@mui/material";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [departments, setDepartments] = useState([]);
   const [positions, setPositions] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -23,7 +27,12 @@ const Signup = () => {
         );
         setDepartments(response.data);
       } catch (error) {
-        console.error("Error fetching departments:", error);
+        setSnackbarMessage(
+          "Error fetching departments: " +
+            (error.response?.data?.message || error.message),
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     };
 
@@ -37,12 +46,16 @@ const Signup = () => {
         const response = await getPositions.post(VITE_GETPOSITIONS_ENDPOINT);
         setPositions(response.data);
       } catch (error) {
-        console.error("Error fetching positions:", error);
+        setSnackbarMessage(
+          "Error fetching positions: " +
+            (error.response?.data?.message || error.message),
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     };
     fetchPositions();
   }, []);
-  
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -77,21 +90,21 @@ const Signup = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      console.log("API response:", response.data);
-
       if (response.data.status) {
         alert("Signup successful!");
+        setSnackbarMessage("Signup successful!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         navigate("/login");
       } else {
         alert("Signup failed: " + (response.data.message || "Unknown error"));
       }
     } catch (error) {
-      console.error("API error:", error.response?.data || error.message);
-      alert(
-        "Signup failed: " +
-          (error.response?.data?.message || "Network or server error"),
+      setSnackbarMessage(
+        "API error: " + (error.response?.data?.message || error.message),
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -147,6 +160,21 @@ const Signup = () => {
           </Link>
         </p>
       </motion.div>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

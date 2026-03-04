@@ -5,8 +5,12 @@ import Stack from "@mui/material/Stack";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Snackbar, Alert } from "@mui/material";
 
 const Step3 = ({ formData, setFormData, setStep, handleSubmit }) => {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const { password, confirmPassword, email, userName } = formData;
   const [canSubmit, setCanSubmit] = useState(false);
   const [error, setError] = useState("");
@@ -14,25 +18,25 @@ const Step3 = ({ formData, setFormData, setStep, handleSubmit }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
- useEffect(() => {
-  const emailValid = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const passwordsFilled = password && confirmPassword;
-  const passwordsMatch = password === confirmPassword;
+  useEffect(() => {
+    const emailValid = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const passwordsFilled = password && confirmPassword;
+    const passwordsMatch = password === confirmPassword;
 
-  if (!passwordsFilled) {
-    setCanSubmit(false);
-    setError("");
-  } else if (!passwordsMatch) {
-    setCanSubmit(false);
-    setError("Passwords do not match");
-  } else if (!emailValid) {
-    setCanSubmit(false);
-    setError("Please enter a valid email address");
-  } else {
-    setCanSubmit(true);
-    setError("");
-  }
-}, [password, confirmPassword, email]);
+    if (!passwordsFilled) {
+      setCanSubmit(false);
+      setError("");
+    } else if (!passwordsMatch) {
+      setCanSubmit(false);
+      setError("Passwords do not match");
+    } else if (!emailValid) {
+      setCanSubmit(false);
+      setError("Please enter a valid email address");
+    } else {
+      setCanSubmit(true);
+      setError("");
+    }
+  }, [password, confirmPassword, email]);
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -41,7 +45,11 @@ const Step3 = ({ formData, setFormData, setStep, handleSubmit }) => {
     try {
       await handleSubmit();
     } catch (err) {
-      console.error(err);
+      setSnackbarMessage(
+        "Failed to Submit: " + (err.response?.data?.message || err.message),
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false);
     }
@@ -146,6 +154,21 @@ const Step3 = ({ formData, setFormData, setStep, handleSubmit }) => {
           </Button>
         </Stack>
       </Stack>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

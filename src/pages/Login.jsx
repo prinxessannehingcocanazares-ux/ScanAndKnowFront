@@ -2,16 +2,25 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { QrCode } from "lucide-react";
-import { TextField, Button, IconButton, InputAdornment, Box } from "@mui/material";
+import {
+  TextField,
+  Button,
+  IconButton,
+  InputAdornment,
+  Box,
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import logInApi from "../api/loginApi";
 import { useAuth } from "../context/AuthContext";
+import { Snackbar, Alert } from "@mui/material";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -28,29 +37,29 @@ const Login = () => {
       setLoading(true);
       const response = await logInApi.post(endpointUrl, formData);
 
-      console.log("Login response:", response.data);
-
       if (response.data.status) {
-              const { status, ...userData } = response.data;
-
+        const { status, ...userData } = response.data;
         login(userData);
         navigate("/dashboard");
       } else {
-        alert("Login failed: " + (response.data.message || "Invalid credentials"));
+        setErrorMessage(response.data.message || "Invalid credentials");
+        setOpenSnackbar(true);
       }
     } catch (err) {
-      console.error(err);
-      alert("Login failed: " + (err.response?.data?.message || err.message));
+      setErrorMessage(
+        err.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      );
+      setOpenSnackbar(true);
     } finally {
       setLoading(false);
     }
   };
 
   const emailValid =
-  !!formData.email &&
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    !!formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
-const canLogin = formData.userName && formData.password && emailValid;
+  const canLogin = formData.userName && formData.password && emailValid;
 
   return (
     <Box
@@ -180,6 +189,24 @@ const canLogin = formData.userName && formData.password && emailValid;
           </Link>
         </p>
       </motion.div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={(event, reason) => {
+          if (reason === "clickaway") return;
+          setOpenSnackbar(false);
+        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

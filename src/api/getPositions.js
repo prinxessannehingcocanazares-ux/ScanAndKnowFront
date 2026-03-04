@@ -5,9 +5,7 @@ const { VITE_IS_TEST, VITE_API_URL_TEST, VITE_API_URL_PROD } =
 
 const isTest = VITE_IS_TEST === "true";
 
-const baseURL = isTest
-  ? VITE_API_URL_TEST
-  : VITE_API_URL_PROD;
+const baseURL = isTest ? VITE_API_URL_TEST : VITE_API_URL_PROD;
 
 const getPositions = axios.create({
   baseURL,
@@ -18,10 +16,7 @@ const getPositions = axios.create({
 
 getPositions.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside getPositions api Request URL:", fullUrl);
   return config;
 });
-
-
 
 export default getPositions;

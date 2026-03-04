@@ -5,24 +5,18 @@ const { VITE_IS_TEST, VITE_API_URL_TEST, VITE_API_URL_PROD } =
 
 const isTest = VITE_IS_TEST === "true";
 
-console.log("isTest: ", isTest);
+const baseURL = isTest ? VITE_API_URL_TEST : VITE_API_URL_PROD;
 
-const baseURL = isTest
-  ? VITE_API_URL_TEST
-  : VITE_API_URL_PROD;
-
-const signUpApi = axios.create({
+const getRooms = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-signUpApi.interceptors.request.use((config) => {
+getRooms.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
   return config;
 });
 
-
-
-export default signUpApi;
+export default getRooms;
