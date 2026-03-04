@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: User, label: 'Profile', path: '/profile' },
-    { icon: Calendar, label: 'Weekly Schedule', path: '/weeklyschedule' },
+    { icon: Calendar, label: 'Schedule', path: '/schedule' },
     { icon: DoorOpen, label: 'Rooms', path: '/rooms' },
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: QrCode, label: 'QR Scanner', path: '/qr-scanner' },

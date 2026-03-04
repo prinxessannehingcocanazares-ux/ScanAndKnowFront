@@ -18,7 +18,7 @@ const getUserById = axios.create({
 
 getUserById.interceptors.request.use((config) => {
   const fullUrl = `${config.baseURL}${config.url}`;
-  console.log("inside etuserbyid api Request URL:", fullUrl);
+  console.log("inside getuserbyid api Request URL:", fullUrl);
   return config;
 });
 
