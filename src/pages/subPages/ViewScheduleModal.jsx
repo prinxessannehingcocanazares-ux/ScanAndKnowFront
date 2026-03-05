@@ -25,10 +25,16 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
       try {
         const { VITE_GETAVAILABLEROOMS_ENDPOINT } = window.__ENV__ || {};
 
+        const start = new Date(schedule.start);
+        start.setHours(start.getHours() + 8);
+
+        const end = new Date(schedule.end);
+        end.setHours(end.getHours() + 8);
+
         const payload = {
-          id: schedule.id,
-          start: new Date(schedule.start).toISOString(),
-          end: new Date(schedule.end).toISOString(),
+            id: schedule.id,
+            start: start.toISOString(),
+            end: end.toISOString(),
         };
 
               console.log("fetch available payload:", payload);
