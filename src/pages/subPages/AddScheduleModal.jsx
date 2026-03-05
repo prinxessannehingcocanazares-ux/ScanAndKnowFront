@@ -32,19 +32,14 @@ const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd }) =
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <select
-              value={formData.day}
-              onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
-            >
-              <option>Monday</option>
-              <option>Tuesday</option>
-              <option>Wednesday</option>
-              <option>Thursday</option>
-              <option>Friday</option>
-            </select>
+          {/* Replace day select with date input */}
+  <input
+  type="date"
+  value={formData.day}
+  onChange={(e) => setFormData({ ...formData, day: e.target.value })}
+  className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
+/>
 
-            {/* Removed Room Selection */}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -1,42 +1,28 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { mockSchedules } from "../lib/mockData";
 import createSchedules from "../api/createSchedules";
 import { useAuth } from "../context/AuthContext";
 import getSchedulesByUserId from "../api/getSchedulesByUserId";
 import ViewScheduleModal from "../pages/subPages/ViewScheduleModal";
 
 const LazyCalendar = lazy(() => import("../pages/subPages/LazyCalendar"));
-const AddScheduleModal = lazy(() => import("../pages/subPages/AddScheduleModal"));
+const AddScheduleModal = lazy(
+  () => import("../pages/subPages/AddScheduleModal"),
+);
 const LazySnackbar = lazy(() => import("../pages/subPages/LazySnackbar"));
 
 const Schedule = () => {
   const { user } = useAuth();
   const calendarRef = useRef(null);
-
-  const [schedules, setSchedules] = useState(
-    mockSchedules.map((s) => {
-      const start = parseTimeSlotToDate(s.day, s.time);
-      const end = new Date(start);
-      end.setHours(end.getHours() + 1);
-      return {
-        ...s,
-        start,
-        end,
-        title: s.subject,
-        id: Math.random().toString(36).substr(2, 9),
-        rrule: null,
-      };
-    })
-  );
+  const [schedules, setSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
   const [currentView, setCurrentView] = useState("timeGridWeek");
 
   const [showAdd, setShowAdd] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
-    day: "Monday",
+    day: "",
     room: "",
     startTime: "09:00",
     endTime: "10:00",
@@ -47,28 +33,30 @@ const Schedule = () => {
   const [showViewModal, setShowViewModal] = useState(false);
 
   // Snackbar state
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
-
-
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, open: false }));
 
   // Fetch schedules
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
         const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
-        const response = await getSchedulesByUserId.post(`${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`);
+        const response = await getSchedulesByUserId.post(
+          `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
+        );
         const data = response.data;
-
         const mappedSchedules = data.map((s) => {
-          const start = parseTimeSlotToDate(s.scheduleDay, s.scheduleStartTime);
-          const end = parseTimeSlotToDate(s.scheduleDay, s.scheduleEndTime);
           return {
             id: s.scheduleId,
             title: s.scheduleSubject,
             day: s.scheduleDay,
-            start,
-            end,
+            start: parseISOToLocalDate(s.scheduleStartTime),
+            end: parseISOToLocalDate(s.scheduleEndTime),
             room: s.scheduleRoomId || null,
             rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
           };
@@ -100,15 +88,19 @@ const Schedule = () => {
     const { subject, day, startTime, endTime, repeatWeekly, room } = formData;
 
     if (!subject) {
-      setSnackbar({ open: true, message: "Please enter a subject", severity: "warning" });
+      setSnackbar({
+        open: true,
+        message: "Please enter a subject",
+        severity: "warning",
+      });
       return;
     }
 
     const payload = {
       ScheduleSubject: subject,
       ScheduleDay: day,
-      ScheduleStartTime: startTime + ":00",
-      ScheduleEndTime: endTime + ":00",
+      ScheduleStartTime: `${formData.day}T${formData.startTime}:00`,
+      ScheduleEndTime: `${formData.day}T${formData.endTime}:00`,
       ScheduleRepeatWeekly: repeatWeekly,
       ScheduleUserId: user?.id || null,
       ScheduleRoomId: room || null,
@@ -116,35 +108,53 @@ const Schedule = () => {
 
     try {
       const { VITE_CREATESCHEDULE_ENDPOINT } = window.__ENV__ || {};
-      const saveResponse = await createSchedules.post(VITE_CREATESCHEDULE_ENDPOINT, payload);
+      const saveResponse = await createSchedules.post(
+        VITE_CREATESCHEDULE_ENDPOINT,
+        payload,
+      );
       const result = saveResponse.data;
-
+      const dayString = getDayString(result.scheduleDay);
       if (result.scheduleStatus) {
-        const startDate = parseTimeSlotToDate(result.scheduleDay, result.scheduleStartTime);
-        const endDate = parseTimeSlotToDate(result.scheduleDay, result.scheduleEndTime);
-
         setSchedules((prev) => [
           ...prev,
           {
             id: result.scheduleId,
             title: result.scheduleSubject,
-            day: result.scheduleDay,
-            start: startDate,
-            end: endDate,
+            day: dayString,
+            start: parseISOToLocalDate(result.scheduleStartTime),
+            end: parseISOToLocalDate(result.scheduleEndTime),
             room: result.scheduleRoomId || null,
             rrule: result.scheduleRepeatWeekly ? { freq: "weekly" } : null,
           },
         ]);
 
         setShowAdd(false);
-        setFormData({ subject: "", day: "Monday", room: "", startTime: "09:00", endTime: "10:00", repeatWeekly: false });
+        setFormData({
+          subject: "",
+          day: "Monday",
+          room: "",
+          startTime: "09:00",
+          endTime: "10:00",
+          repeatWeekly: false,
+        });
 
-        setSnackbar({ open: true, message: "Schedule saved successfully!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Schedule saved successfully!",
+          severity: "success",
+        });
       } else {
         throw new Error(result.message || "Failed to save schedule");
       }
     } catch (err) {
-      setSnackbar({ open: true, message: err.response?.data?.message || err.message || "Failed to save schedule", severity: "error" });
+      setSnackbar({
+        open: true,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to save schedule",
+        severity: "error",
+      });
     }
   };
 
@@ -152,7 +162,9 @@ const Schedule = () => {
     <div className="p-4 sm:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-        <p className="text-sm sm:text-base text-gray-500">Manage and view your teaching sections.</p>
+        <p className="text-sm sm:text-base text-gray-500">
+          Manage and view your teaching sections.
+        </p>
 
         <button
           onClick={() => setShowAdd(true)}
@@ -171,16 +183,28 @@ const Schedule = () => {
             onClick={() => setCurrentView(view)}
             className={`px-4 py-2 rounded-xl font-bold ${currentView === view ? "bg-indigo-600 text-white" : "bg-gray-100"}`}
           >
-            {view === "timeGridDay" ? "Day" : view === "timeGridWeek" ? "Week" : "Month"}
+            {view === "timeGridDay"
+              ? "Day"
+              : view === "timeGridWeek"
+                ? "Week"
+                : "Month"}
           </button>
         ))}
       </div>
 
       {/* Calendar */}
       <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-sm">
-        <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading calendar...</div>}>
+        <Suspense
+          fallback={
+            <div className="p-10 text-center text-gray-500">
+              Loading calendar...
+            </div>
+          }
+        >
           {loadingSchedules ? (
-            <div className="p-10 text-center text-gray-500">Loading schedules...</div>
+            <div className="p-10 text-center text-gray-500">
+              Loading schedules...
+            </div>
           ) : (
             <LazyCalendar
               ref={calendarRef}
@@ -195,7 +219,9 @@ const Schedule = () => {
                 setSelectedSchedule({
                   id: info.event.id,
                   title: info.event.title,
-                      day: info.event.extendedProps?.day || getDayFromDate(info.event.start),
+                  day:
+                    info.event.extendedProps?.day ||
+                    getDayFromDate(info.event.start),
 
                   start: info.event.start,
                   end: info.event.end,
@@ -210,17 +236,38 @@ const Schedule = () => {
 
       {/* Modals */}
       <AnimatePresence>
-        {showViewModal && <ViewScheduleModal schedule={selectedSchedule} onClose={() => setShowViewModal(false)} />}
+        {showViewModal && (
+          <ViewScheduleModal
+            schedule={selectedSchedule}
+            onClose={() => setShowViewModal(false)}
+          />
+        )}
         {showAdd && (
-          <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading modal...</div>}>
-            <AddScheduleModal formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} setShowAdd={setShowAdd} />
+          <Suspense
+            fallback={
+              <div className="p-10 text-center text-gray-500">
+                Loading modal...
+              </div>
+            }
+          >
+            <AddScheduleModal
+              formData={formData}
+              setFormData={setFormData}
+              handleSubmit={handleSubmit}
+              setShowAdd={setShowAdd}
+            />
           </Suspense>
         )}
       </AnimatePresence>
 
       {/* Snackbar */}
       <Suspense fallback={null}>
-        <LazySnackbar open={snackbar.open} onClose={handleCloseSnackbar} message={snackbar.message} severity={snackbar.severity} />
+        <LazySnackbar
+          open={snackbar.open}
+          onClose={handleCloseSnackbar}
+          message={snackbar.message}
+          severity={snackbar.severity}
+        />
       </Suspense>
     </div>
   );
@@ -228,13 +275,41 @@ const Schedule = () => {
 
 // Utils
 function parseTimeSlotToDate(day, time) {
-  const dayMap = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5 };
+  const dayMap = {
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+  };
   const today = new Date();
-  const nextMonday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+  const nextMonday = new Date(
+    today.setDate(today.getDate() - today.getDay() + 1),
+  );
   const date = new Date(nextMonday);
   date.setDate(date.getDate() + (dayMap[day] - 1));
   const [hours, minutes] = time.split(":").map(Number);
   return new Date(date.setHours(hours, minutes, 0, 0));
+}
+function getDayString(dateString) {
+  const date = new Date(dateString);
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  return days[date.getDay()];
+}
+
+function parseISOToLocalDate(isoString) {
+  const [datePart, timePart] = isoString.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes, seconds);
 }
 
 export default Schedule;
