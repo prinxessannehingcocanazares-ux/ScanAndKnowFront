@@ -10,10 +10,12 @@ window.__ENV__ = {
   VITE_LOGIN_ENDPOINT: "/api/User/Login",
   VITE_GETUSERBYID_ENDPOINT: "/api/User/GetUserById", 
   VITE_GETDEPARTMENTS_ENDPOINT: "/api/User/GetDepartments",
+  VITE_GETDEPARTMENTBYID_ENDPOINT: "/api/User/GetDepartmentById",
   VITE_GETPOSITIONS_ENDPOINT: "/api/User/GetPositions",
   VITE_GETROOMS_ENDPOINT: "/api/User/GetRooms",
   VITE_CREATESCHEDULE_ENDPOINT: "/api/User/CreateSchedule",
   VITE_GETSCHEDULES_ENDPOINT: "/api/User/GetSchedulesByUserId",
   VITE_GETAVAILABLEROOMS_ENDPOINT: "/api/User/GetAvailableRooms",
   VITE_UPDATESCHEDULEBYID_ENDPOINT: "/api/User/UpdateScheduleById",
+  VITE_GETROOMBYID_ENDPOINT: "/api/User/GetRoomById",
 }

@@ -2,7 +2,8 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import getAvailableRooms from "../../api/getAvailableRooms";
 import updateScheduleById from "../../api/updateScheduleById"; // your API call to update schedule
-
+import getRoomById from "../../api/getRoomById"; // API call to fetch room details
+import getDepartmentById from "../../api/getDepartmentById"; // API call to fetch department details
 const LazySnackbar = lazy(() => import("../../pages/subPages/LazySnackbar"));
 
 const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
@@ -20,6 +21,61 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
   const [availableRooms, setAvailableRooms] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(schedule.room || null);
 
+const [roomInfo, setRoomInfo] = useState(null); 
+const [loadingRoom, setLoadingRoom] = useState(false);
+const [departmentInfo, setDepartmentInfo] = useState(null);
+
+useEffect(() => {
+  const fetchDepartmentInfo = async () => {
+    if (!roomInfo?.roomDepartmentId) return;
+    setLoadingRoom(true);
+    try {
+      const { VITE_GETDEPARTMENTBYID_ENDPOINT } = window.__ENV__ || {};
+       const response = await getDepartmentById.post(
+          `${VITE_GETDEPARTMENTBYID_ENDPOINT}?id=${roomInfo?.roomDepartmentId}`,
+        );
+
+      console.log("Fetched department info:", response.data);
+      setDepartmentInfo(response.data);
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || "Failed to fetch department info",
+        severity: "error",
+      });
+    } finally {
+      setLoadingRoom(false);
+    }
+  };
+
+  fetchDepartmentInfo();
+}, [roomInfo?.roomDepartmentId]);
+
+  useEffect(() => {
+  const fetchRoomInfo = async () => {
+    if (!schedule?.room) return;
+    setLoadingRoom(true);
+    try {
+      const { VITE_GETROOMBYID_ENDPOINT } = window.__ENV__ || {};
+       const response = await getRoomById.post(
+          `${VITE_GETROOMBYID_ENDPOINT}?id=${schedule?.room}`,
+        );
+
+      setRoomInfo(response.data);
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || "Failed to fetch room info",
+        severity: "error",
+      });
+    } finally {
+      setLoadingRoom(false);
+    }
+  };
+
+  fetchRoomInfo();
+}, [schedule?.room]);
+
   useEffect(() => {
     const fetchAvailableRooms = async () => {
       try {
@@ -36,8 +92,6 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
             start: start.toISOString(),
             end: end.toISOString(),
         };
-
-              console.log("fetch available payload:", payload);
 
 
         const response = await getAvailableRooms.post(
@@ -137,21 +191,38 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-500 text-sm mb-1">Subject</label>
-              <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">{schedule.title}</p>
+              <label className="block text-gray-500 text-sm mb-1">
+                Subject
+              </label>
+              <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
+                {schedule.title}
+              </p>
             </div>
 
+{/* Room and Day side by side */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-500 text-sm mb-1">Day</label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">{schedule.day}</p>
+                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
+                  {schedule.day}
+                </p>
               </div>
+
               <div>
                 <label className="block text-gray-500 text-sm mb-1">Room</label>
                 <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                  {selectedRoom ? (
+                  {loadingRoom ? (
+                    "Loading..."
+                  ) : roomInfo ? (
                     <>
-                      {selectedRoom.roomCode} ({selectedRoom.departmentCollegeName}) - Capacity: {selectedRoom.roomCapacity}
+                      {roomInfo.roomCode} ({departmentInfo?.departmentCollegeName}) -
+                      Capacity: {roomInfo.roomCapacity}
+                    </>
+                  ) : selectedRoom ? (
+                    <>
+                      {selectedRoom.roomCode} (
+                      {selectedRoom.departmentCollegeName}) - Capacity:{" "}
+                      {selectedRoom.roomCapacity}
                     </>
                   ) : (
                     "Not Assigned"
@@ -162,18 +233,28 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-500 text-sm mb-1">Start Time</label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">{formatTime(schedule.start)}</p>
+                <label className="block text-gray-500 text-sm mb-1">
+                  Start Time
+                </label>
+                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
+                  {formatTime(schedule.start)}
+                </p>
               </div>
               <div>
-                <label className="block text-gray-500 text-sm mb-1">End Time</label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">{formatTime(schedule.end)}</p>
+                <label className="block text-gray-500 text-sm mb-1">
+                  End Time
+                </label>
+                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
+                  {formatTime(schedule.end)}
+                </p>
               </div>
             </div>
 
             {/* Grouped available rooms */}
             <div className="mt-4">
-              <label className="block text-gray-500 text-sm mb-2">Available Rooms by Department</label>
+              <label className="block text-gray-500 text-sm mb-2">
+                Available Rooms by Department
+              </label>
               {Object.keys(roomsByDepartment).length > 0 ? (
                 Object.entries(roomsByDepartment).map(([deptName, rooms]) => (
                   <div key={deptName} className="mb-3">

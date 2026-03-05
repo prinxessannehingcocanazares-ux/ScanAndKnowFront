@@ -18,7 +18,6 @@ const Schedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
   const [currentView, setCurrentView] = useState("timeGridWeek");
-
   const [showAdd, setShowAdd] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
@@ -50,18 +49,18 @@ const Schedule = () => {
           `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
         );
         const data = response.data;
-        const mappedSchedules = data.map((s) => {
-          return {
-            id: s.scheduleId,
-            title: s.scheduleSubject,
-            day: s.scheduleDay,
-            start: parseISOToLocalDate(s.scheduleStartTime),
-            end: parseISOToLocalDate(s.scheduleEndTime),
-            room: s.scheduleRoomId || null,
-            rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
-          };
-        });
-
+       const mappedSchedules = data.map((s) => ({
+  id: s.scheduleId,
+  title: s.scheduleSubject,
+  start: parseISOToLocalDate(s.scheduleStartTime),
+  end: parseISOToLocalDate(s.scheduleEndTime),
+  extendedProps: {
+    room: s.scheduleRoomId || null,
+    day: s.scheduleDay,
+  },
+  rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
+}));
+console.log("mapped schedules:", mappedSchedules);
         setSchedules(mappedSchedules);
         setLoadingSchedules(false);
       } catch (error) {
@@ -85,7 +84,7 @@ const Schedule = () => {
   // Handle schedule submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { subject, day, startTime, endTime, repeatWeekly, room } = formData;
+    const { subject, day, repeatWeekly, room } = formData;
 
     if (!subject) {
       setSnackbar({
@@ -274,23 +273,7 @@ const Schedule = () => {
 };
 
 // Utils
-function parseTimeSlotToDate(day, time) {
-  const dayMap = {
-    Monday: 1,
-    Tuesday: 2,
-    Wednesday: 3,
-    Thursday: 4,
-    Friday: 5,
-  };
-  const today = new Date();
-  const nextMonday = new Date(
-    today.setDate(today.getDate() - today.getDay() + 1),
-  );
-  const date = new Date(nextMonday);
-  date.setDate(date.getDate() + (dayMap[day] - 1));
-  const [hours, minutes] = time.split(":").map(Number);
-  return new Date(date.setHours(hours, minutes, 0, 0));
-}
+
 function getDayString(dateString) {
   const date = new Date(dateString);
   const days = [
