@@ -31,6 +31,9 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
           end: new Date(schedule.end).toISOString(),
         };
 
+              console.log("fetch available payload:", payload);
+
+
         const response = await getAvailableRooms.post(
           VITE_GETAVAILABLEROOMS_ENDPOINT,
           payload
@@ -82,7 +85,6 @@ const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
         const { VITE_UPDATESCHEDULEBYID_ENDPOINT } = window.__ENV__ || {};
 
       await updateScheduleById.post(VITE_UPDATESCHEDULEBYID_ENDPOINT, payload);
-
       setSnackbar({
         open: true,
         message: "Schedule updated successfully!",
