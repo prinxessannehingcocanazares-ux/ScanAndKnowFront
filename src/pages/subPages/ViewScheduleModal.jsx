@@ -187,36 +187,46 @@ useEffect(() => {
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-8 overflow-y-auto max-h-[80vh]"
         >
-          <h3 className="text-xl font-bold mb-6">Schedule Details</h3>
+          <h3 className="text-xl font-bold mb-6">
+            <strong>Schedule Details</strong>
+          </h3>
 
           <div className="space-y-4">
             <div>
               <label className="block text-gray-500 text-sm mb-1">
-                Subject
+                <strong>Subject</strong>
               </label>
               <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
                 {schedule.title}
               </p>
             </div>
 
-{/* Room and Day side by side */}
+            {/* Room and Day side by side */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-500 text-sm mb-1">Day</label>
+                <label className="block text-gray-500 text-sm mb-1">
+                  <strong>Day</strong>
+                </label>
                 <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
                   {schedule.day}
                 </p>
               </div>
 
               <div>
-                <label className="block text-gray-500 text-sm mb-1">Room</label>
+                <label className="block text-gray-500 text-sm mb-1">
+                  <strong>Room Info</strong>
+                </label>
                 <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
                   {loadingRoom ? (
                     "Loading..."
                   ) : roomInfo ? (
                     <>
-                      {roomInfo.roomCode} ({departmentInfo?.departmentCollegeName}) -
-                      Capacity: {roomInfo.roomCapacity}
+                      <strong>DEPARTMENT:</strong> <br />
+                      {departmentInfo?.departmentCollegeName} <br />
+                      <strong>ROOMCODE:</strong> <br />
+                      {roomInfo.roomCode} <br />
+                      <strong>CAPACITY:</strong> <br />
+                      {roomInfo.roomCapacity}
                     </>
                   ) : selectedRoom ? (
                     <>
@@ -234,7 +244,7 @@ useEffect(() => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-500 text-sm mb-1">
-                  Start Time
+                  <strong>Start Time</strong>
                 </label>
                 <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
                   {formatTime(schedule.start)}
@@ -242,7 +252,7 @@ useEffect(() => {
               </div>
               <div>
                 <label className="block text-gray-500 text-sm mb-1">
-                  End Time
+                  <strong>End Time</strong>
                 </label>
                 <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
                   {formatTime(schedule.end)}
@@ -252,8 +262,8 @@ useEffect(() => {
 
             {/* Grouped available rooms */}
             <div className="mt-4">
-              <label className="block text-gray-500 text-sm mb-2">
-                Available Rooms by Department
+              <label className="block text-blue-600 text-sm font-semibold mb-2">
+                <strong>Available Rooms by Department</strong>
               </label>
               {Object.keys(roomsByDepartment).length > 0 ? (
                 Object.entries(roomsByDepartment).map(([deptName, rooms]) => (

@@ -40,40 +40,41 @@ const Schedule = () => {
   const handleCloseSnackbar = () =>
     setSnackbar((prev) => ({ ...prev, open: false }));
 
+  
+const fetchSchedules = async () => {
+  try {
+    const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
+    const response = await getSchedulesByUserId.post(
+      `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
+    );
+    const data = response.data;
+    const mappedSchedules = data.map((s) => ({
+      id: s.scheduleId,
+      title: s.scheduleSubject,
+      start: parseISOToLocalDate(s.scheduleStartTime),
+      end: parseISOToLocalDate(s.scheduleEndTime),
+      extendedProps: {
+        room: s.scheduleRoomId || null,
+        day: s.scheduleDay,
+      },
+      rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
+    }));
+    setSchedules(mappedSchedules);
+    setLoadingSchedules(false);
+  } catch (error) {
+    setSnackbar({
+      open: true,
+      message: error.response?.data?.message || "Failed to fetch schedules",
+      severity: "error",
+    });
+    setLoadingSchedules(false);
+  }
+};
+
   // Fetch schedules
   useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
-        const response = await getSchedulesByUserId.post(
-          `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
-        );
-        const data = response.data;
-       const mappedSchedules = data.map((s) => ({
-  id: s.scheduleId,
-  title: s.scheduleSubject,
-  start: parseISOToLocalDate(s.scheduleStartTime),
-  end: parseISOToLocalDate(s.scheduleEndTime),
-  extendedProps: {
-    room: s.scheduleRoomId || null,
-    day: s.scheduleDay,
-  },
-  rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
-}));
-console.log("mapped schedules:", mappedSchedules);
-        setSchedules(mappedSchedules);
-        setLoadingSchedules(false);
-      } catch (error) {
-        setSnackbar({
-          open: true,
-          message: error.response?.data?.message || "Failed to fetch schedules",
-          severity: "error",
-        });
-        setLoadingSchedules(false);
-      }
-    };
-    fetchSchedules();
-  }, [user.id]);
+  fetchSchedules();
+}, [user.id]);
 
   // Switch calendar view
   useEffect(() => {
@@ -238,7 +239,11 @@ console.log("mapped schedules:", mappedSchedules);
         {showViewModal && (
           <ViewScheduleModal
             schedule={selectedSchedule}
-            onClose={() => setShowViewModal(false)}
+            onClose={() => {
+              setShowViewModal(false);
+            fetchSchedules();
+            }}
+            
           />
         )}
         {showAdd && (
@@ -294,5 +299,6 @@ function parseISOToLocalDate(isoString) {
   const [hours, minutes, seconds] = timePart.split(":").map(Number);
   return new Date(year, month - 1, day, hours, minutes, seconds);
 }
+
 
 export default Schedule;
