@@ -1,5 +1,5 @@
 window.__ENV__ = {
-  VITE_IS_TEST: "false",
+  VITE_IS_TEST: "true",
 
   // Base URLS for API
   VITE_API_URL_TEST: "https://localhost:7236",
@@ -13,4 +13,5 @@ window.__ENV__ = {
   VITE_GETPOSITIONS_ENDPOINT: "/api/User/GetPositions",
   VITE_GETROOMS_ENDPOINT: "/api/User/GetRooms",
   VITE_CREATESCHEDULE_ENDPOINT: "/api/User/CreateSchedule",
+  VITE_GETSCHEDULES_ENDPOINT: "/api/User/GetSchedulesByUserId",
 }
