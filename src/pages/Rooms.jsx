@@ -100,7 +100,7 @@ const Rooms = () => {
   return (
     <div className="p-4 sm:p-8">
       <div className="mb-4 text-gray-500">
-        Monitor room status and capacity in real-time.
+        Monitor room schedules in real-time.
       </div>
 
       {/* ---------------- Tabs ---------------- */}

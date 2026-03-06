@@ -1,47 +1,141 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import AssignRoomModal from "./AssignRoomModal";
+
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Stack,
+  Chip,
+  Divider,
+} from "@mui/material";
 
 const UnassignedSchedulesTab = ({ schedules, refreshSchedules }) => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
 
-  // Sort schedules by descending start date
-  const sortedSchedules = [...schedules].sort(
-    (a, b) => a.start.getTime() - b.start.getTime()
-  );
+  // Sort schedules ASC
+  const sortedSchedules = useMemo(() => {
+    return [...schedules].sort(
+      (a, b) => new Date(a.start) - new Date(b.start)
+    );
+  }, [schedules]);
+
+  // Group by Date
+  const groupedSchedules = useMemo(() => {
+    const groups = {};
+
+    sortedSchedules.forEach((s) => {
+      const dateKey = new Date(s.start).toLocaleDateString();
+
+      if (!groups[dateKey]) groups[dateKey] = [];
+
+      groups[dateKey].push(s);
+    });
+
+    return groups;
+  }, [sortedSchedules]);
+
+  if (sortedSchedules.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        All schedules are assigned to rooms.
+      </Typography>
+    );
+  }
 
   return (
-    <>
-      {sortedSchedules.length === 0 ? (
-        <p className="text-gray-500">All schedules are assigned to rooms.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {sortedSchedules.map((s) => (
-            <div
-              key={s.id}
-              onClick={() => setSelectedSchedule(s)}
-              className="bg-white border border-red-300 rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition"
-            >
-              <p className="text-sm font-bold text-gray-900">{s.title}</p>
-              <p className="text-xs text-gray-500">Day: {s.extendedProps.day}</p>
-              <p className="text-xs text-gray-500">
-                Time: {s.start.toLocaleTimeString()} - {s.end.toLocaleTimeString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+    <Box>
+      {Object.entries(groupedSchedules).map(([date, list]) => (
+        <Box key={date} mb={2}>
+          {/* Date Header */}
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "primary.main",
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
+            {date} ({list.length})
+          </Typography>
 
+          <Divider sx={{ mb: 1 }} />
+
+          <Grid container spacing={1}>
+            {list.map((s) => (
+              <Grid item xs={12} md={6} lg={4} key={s.id}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 1,
+                    cursor: "pointer",
+                    borderRadius: 2,
+                    "&:hover": {
+                      bgcolor: "grey.100",
+                    },
+                  }}
+                  onClick={() => setSelectedSchedule(s)}
+                >
+                  <Stack spacing={0.3}>
+                    {/* Title */}
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      noWrap
+                    >
+                      {s.title}
+                    </Typography>
+
+                    {/* Day + Time */}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      flexWrap="wrap"
+                    >
+                      <Chip
+                        label={s.extendedProps?.day}
+                        size="small"
+                        color="info"
+                        sx={{ height: 20, fontSize: 11 }}
+                      />
+
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {new Date(s.start).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        -{" "}
+                        {new Date(s.end).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      ))}
+
+      {/* Assign Room Modal */}
       {selectedSchedule && (
         <AssignRoomModal
           schedule={selectedSchedule}
           onClose={() => setSelectedSchedule(null)}
           onRoomAssigned={() => {
             setSelectedSchedule(null);
-            if (refreshSchedules) refreshSchedules();
+            refreshSchedules?.();
           }}
         />
       )}
-    </>
+    </Box>
   );
 };
 

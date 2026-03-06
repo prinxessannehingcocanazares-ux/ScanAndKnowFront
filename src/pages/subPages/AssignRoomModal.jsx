@@ -11,32 +11,44 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
   const [availableRooms, setAvailableRooms] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, open: false }));
 
   // Fetch available rooms
   useEffect(() => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
-        const { VITE_GETAVAILABLEROOMS_ENDPOINT } = window.__ENV__ || {};       
+        const { VITE_GETAVAILABLEROOMS_ENDPOINT } = window.__ENV__ || {};
 
-         const start = new Date(schedule.start);
+        const start = new Date(schedule.start);
         start.setHours(start.getHours() + 8);
 
         const end = new Date(schedule.end);
         end.setHours(end.getHours() + 8);
 
-        const response = await getAvailableRooms.post(VITE_GETAVAILABLEROOMS_ENDPOINT, {
-          id: schedule.id,
-          start: start.toISOString(),
-          end: end.toISOString(),
-        });
+        const response = await getAvailableRooms.post(
+          VITE_GETAVAILABLEROOMS_ENDPOINT,
+          {
+            id: schedule.id,
+            start: start.toISOString(),
+            end: end.toISOString(),
+          },
+        );
 
         setAvailableRooms(response.data);
       } catch (err) {
-        setSnackbar({ open: true, message: "Failed to fetch available rooms", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch available rooms",
+          severity: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -57,7 +69,11 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
 
   const handleAssignRoom = async () => {
     if (!selectedRoomId) {
-      setSnackbar({ open: true, message: "Select a room first", severity: "warning" });
+      setSnackbar({
+        open: true,
+        message: "Select a room first",
+        severity: "warning",
+      });
       return;
     }
 
@@ -68,16 +84,26 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
         roomId: selectedRoomId,
       });
 
-      setSnackbar({ open: true, message: "Room assigned successfully", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Room assigned successfully",
+        severity: "success",
+      });
 
       if (onRoomAssigned) {
-        const assignedRoom = availableRooms.find((r) => r.roomId === selectedRoomId);
+        const assignedRoom = availableRooms.find(
+          (r) => r.roomId === selectedRoomId,
+        );
         onRoomAssigned(assignedRoom);
       }
 
       onClose();
     } catch (err) {
-      setSnackbar({ open: true, message: "Failed to assign room", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Failed to assign room",
+        severity: "error",
+      });
     }
   };
 
@@ -104,16 +130,30 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
           {/* Header */}
           <div className="sticky top-0 bg-white p-6 border-b z-10">
             <h3 className="text-xl font-bold text-gray-800">
-              Assign Room for: <span className="text-indigo-600">{schedule.title}</span>
+              Assign Room for:{" "}
+              <span className="text-indigo-600">{schedule.title}</span>
             </h3>
+
+            {/* Date + Time */}
+            <div className="mt-2 text-sm text-gray-600 flex flex-wrap gap-4">
+              <span>📅 {formatDate(schedule.start)}</span>
+
+              <span>
+                ⏰ {formatTime(schedule.start)} - {formatTime(schedule.end)}
+              </span>
+            </div>
           </div>
 
           {/* Body */}
           <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
             {loading ? (
-              <p className="text-gray-500 text-center py-10">Loading available rooms...</p>
+              <p className="text-gray-500 text-center py-10">
+                Loading available rooms...
+              </p>
             ) : Object.keys(roomsByDepartment).length === 0 ? (
-              <p className="text-gray-400 text-center py-10">No rooms available for this time</p>
+              <p className="text-gray-400 text-center py-10">
+                No rooms available for this time
+              </p>
             ) : (
               Object.entries(roomsByDepartment).map(([deptName, rooms]) => (
                 <div key={deptName} className="mb-4">
@@ -130,7 +170,9 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
                         }`}
                       >
                         <p className="font-semibold">{room.roomCode}</p>
-                        <p className="text-sm text-gray-600">Capacity: {room.roomCapacity}</p>
+                        <p className="text-sm text-gray-600">
+                          Capacity: {room.roomCapacity}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -170,4 +212,23 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
   );
 };
 
+function formatDate(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleDateString([], {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function formatTime(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 export default AssignRoomModal;

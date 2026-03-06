@@ -4,13 +4,15 @@ import { AnimatePresence } from "framer-motion";
 import createSchedules from "../api/createSchedules";
 import { useAuth } from "../context/AuthContext";
 import getSchedulesByUserId from "../api/getSchedulesByUserId";
-import ViewScheduleModal from "../pages/subPages/ViewScheduleModal";
 
 const LazyCalendar = lazy(() => import("../pages/subPages/LazyCalendar"));
 const AddScheduleModal = lazy(
   () => import("../pages/subPages/AddScheduleModal"),
 );
 const LazySnackbar = lazy(() => import("../pages/subPages/LazySnackbar"));
+const LazyViewScheduleModal = lazy(
+  () => import("../pages/subPages/ViewScheduleModal"),
+);
 
 const Schedule = () => {
   const { user } = useAuth();
@@ -57,6 +59,7 @@ const Schedule = () => {
           day: s.scheduleDay,
         },
         rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
+        isUnassigned: !s.scheduleRoomId,
       }));
       setSchedules(mappedSchedules);
       setLoadingSchedules(false);
@@ -119,10 +122,13 @@ const Schedule = () => {
           {
             id: result.scheduleId,
             title: result.scheduleSubject,
-            day: dayString,
             start: parseISOToLocalDate(result.scheduleStartTime),
             end: parseISOToLocalDate(result.scheduleEndTime),
-            room: result.scheduleRoomId || null,
+            extendedProps: {
+              room: result.scheduleRoomId || null,
+              day: dayString,
+              isUnassigned: !result.scheduleRoomId,
+            },
             rrule: result.scheduleRepeatWeekly ? { freq: "weekly" } : null,
           },
         ]);
@@ -217,6 +223,9 @@ const Schedule = () => {
               height="auto"
               slotMinTime="07:00:00"
               slotMaxTime="20:00:00"
+              eventClassNames={(arg) =>
+                arg.event.extendedProps.isUnassigned ? ["unassigned-event"] : []
+              }
               eventClick={(info) => {
                 setSelectedSchedule({
                   id: info.event.id,
@@ -239,13 +248,21 @@ const Schedule = () => {
       {/* Modals */}
       <AnimatePresence>
         {showViewModal && (
-          <ViewScheduleModal
-            schedule={selectedSchedule}
-            onClose={() => {
-              setShowViewModal(false);
-              fetchSchedules();
-            }}
-          />
+          <Suspense
+            fallback={
+              <div className="p-10 text-center text-gray-500">
+                Loading schedule...
+              </div>
+            }
+          >
+            <LazyViewScheduleModal
+              schedule={selectedSchedule}
+              onClose={() => {
+                setShowViewModal(false);
+                fetchSchedules();
+              }}
+            />
+          </Suspense>
         )}
         {showAdd && (
           <Suspense

@@ -35,7 +35,6 @@ useEffect(() => {
           `${VITE_GETDEPARTMENTBYID_ENDPOINT}?id=${roomInfo?.roomDepartmentId}`,
         );
 
-      console.log("Fetched department info:", response.data);
       setDepartmentInfo(response.data);
     } catch (err) {
       setSnackbar({
@@ -168,145 +167,125 @@ useEffect(() => {
   // Show selected room details
   const selectedRoom = availableRooms.find((r) => r.roomId === selectedRoomId);
 
-  return (
-    <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Background overlay */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-        />
+ return (
+  <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
 
-        {/* Modal card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-8 overflow-y-auto max-h-[80vh]"
-        >
-          <h3 className="text-xl font-bold mb-6">
-            <strong>Schedule Details</strong>
-          </h3>
+      {/* Background Overlay with Blur */}
+      <motion.div
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-500 text-sm mb-1">
-                <strong>Subject</strong>
-              </label>
-              <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                {schedule.title}
-              </p>
-            </div>
+      {/* Modal Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-xl bg-white rounded-2xl shadow-xl p-5 overflow-y-auto max-h-[80vh]"
+        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+      >
+  <h3 className="text-lg font-semibold mb-4 text-gray-800">
+    Schedule Details
+  </h3>
 
-            {/* Room and Day side by side */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-500 text-sm mb-1">
-                  <strong>Day</strong>
-                </label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                  {schedule.day}
-                </p>
-              </div>
 
-              <div>
-                <label className="block text-gray-500 text-sm mb-1">
-                  <strong>Room Info</strong>
-                </label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                  {loadingRoom ? (
-                    "Loading..."
-                  ) : roomInfo ? (
-                    <>
-                      <strong>DEPARTMENT:</strong> <br />
-                      {departmentInfo?.departmentCollegeName} <br />
-                      <strong>ROOMCODE:</strong> <br />
-                      {roomInfo.roomCode} <br />
-                      <strong>CAPACITY:</strong> <br />
-                      {roomInfo.roomCapacity}
-                    </>
-                  ) : selectedRoom ? (
-                    <>
-                      {selectedRoom.roomCode} (
-                      {selectedRoom.departmentCollegeName}) - Capacity:{" "}
-                      {selectedRoom.roomCapacity}
-                    </>
-                  ) : (
-                    "Not Assigned"
-                  )}
-                </p>
-              </div>
-            </div>
+  {/* Schedule Info */}
+  <div className="grid grid-cols-2 gap-3 text-sm">
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-500 text-sm mb-1">
-                  <strong>Start Time</strong>
-                </label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                  {formatTime(schedule.start)}
-                </p>
-              </div>
-              <div>
-                <label className="block text-gray-500 text-sm mb-1">
-                  <strong>End Time</strong>
-                </label>
-                <p className="w-full px-4 py-3 bg-gray-50 rounded-xl">
-                  {formatTime(schedule.end)}
-                </p>
-              </div>
-            </div>
+    <Info label="Subject" value={schedule.title} />
+    <Info label="Day" value={schedule.day} />
 
-            {/* Grouped available rooms */}
-            <div className="mt-4">
-              <label className="block text-blue-600 text-sm font-semibold mb-2">
-                <strong>Available Rooms by Department</strong>
-              </label>
-              {Object.keys(roomsByDepartment).length > 0 ? (
-                Object.entries(roomsByDepartment).map(([deptName, rooms]) => (
-                  <div key={deptName} className="mb-3">
-                    <p className="font-semibold mb-1">{deptName}</p>
-                    {rooms.map((r) => (
-                      <p
-                        key={r.roomId}
-                        onClick={() => handleRoomClick(r)}
-                        className={`w-full px-4 py-2 rounded-xl mb-1 cursor-pointer transition ${
-                          selectedRoomId === r.roomId
-                            ? "bg-indigo-600 text-white"
-                            : "bg-gray-50 hover:bg-gray-100"
-                        }`}
-                      >
-                        {r.roomCode} - Capacity: {r.roomCapacity}
-                      </p>
-                    ))}
-                  </div>
-                ))
-              ) : (
-                <p className="w-full px-4 py-2 bg-gray-50 rounded-xl text-gray-400">
-                  No available rooms
-                </p>
-              )}
-            </div>
+    <Info label="Start" value={formatTime(schedule.start)} />
+    <Info label="End" value={formatTime(schedule.end)} />
+
+    <div className="col-span-2">
+      <label className="text-gray-500 text-xs">Room</label>
+
+      <div className="mt-1 bg-gray-50 rounded-lg px-3 py-2 text-sm">
+        {loadingRoom ? (
+          "Loading..."
+        ) : roomInfo ? (
+          <div className="flex justify-between">
+            <span className="font-semibold">{roomInfo.roomCode}</span>
+            <span className="text-gray-500">
+              {departmentInfo?.departmentCollegeName}
+            </span>
+            <span className="text-gray-500">
+              Cap {roomInfo.roomCapacity}
+            </span>
           </div>
+        ) : (
+          <span className="text-gray-400">Not Assigned</span>
+        )}
+      </div>
+    </div>
+  </div>
 
-          <div className="mt-6 flex justify-end gap-2">
-            <button
-              onClick={handleUpdateSchedule}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
-            >
-              Update Room
-            </button>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-gray-200 rounded-xl font-semibold hover:bg-gray-300 transition"
-            >
-              Close
-            </button>
+  {/* Available Rooms */}
+  <div className="mt-4">
+    <p className="text-sm font-semibold text-indigo-600 mb-2">
+      Available Rooms
+    </p>
+
+    {Object.keys(roomsByDepartment).length > 0 ? (
+      Object.entries(roomsByDepartment).map(([deptName, rooms]) => (
+        <div key={deptName} className="mb-3">
+
+          {/* Department */}
+          <p className="text-xs font-semibold text-gray-500 mb-1">
+            {deptName}
+          </p>
+
+          {/* Rooms grid */}
+          <div className="grid grid-cols-3 gap-2">
+            {rooms.map((r) => (
+              <div
+                key={r.roomId}
+                onClick={() => handleRoomClick(r)}
+                className={`cursor-pointer rounded-lg px-2 py-2 text-xs text-center border transition
+                ${
+                  selectedRoomId === r.roomId
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white hover:bg-gray-50 border-gray-200"
+                }`}
+              >
+                <div className="font-semibold">{r.roomCode}</div>
+                <div className="text-[10px] opacity-70">
+                  Cap {r.roomCapacity}
+                </div>
+              </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
+      ))
+    ) : (
+      <div className="text-sm text-gray-400 bg-gray-50 rounded-lg p-2">
+        No available rooms
+      </div>
+    )}
+  </div>
+
+  {/* Buttons */}
+  <div className="mt-5 flex justify-end gap-2">
+    <button
+      onClick={handleUpdateSchedule}
+      className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700"
+    >
+      Update
+    </button>
+
+    <button
+      onClick={onClose}
+      className="px-4 py-2 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300"
+    >
+      Close
+    </button>
+  </div>
+</motion.div>
       </div>
 
       {/* Snackbar */}
@@ -329,4 +308,12 @@ function formatTime(date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+const Info = ({ label, value }) => (
+  <div>
+    <label className="text-gray-500 text-xs">{label}</label>
+    <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-medium">
+      {value}
+    </div>
+  </div>
+);
 export default ViewScheduleModal;

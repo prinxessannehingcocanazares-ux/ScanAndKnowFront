@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+.unassigned-event {
+  border-left: 4px solid rgb(212, 81, 81); /* or blue if you prefer */
+  background-color: #583939 !important;
+}
