@@ -1,5 +1,5 @@
 window.__ENV__ = {
-  VITE_IS_TEST: "false", // Set to "true" for testing, "false" for production
+  VITE_IS_TEST: "true", // Set to "true" for testing, "false" for production
 
   // Base URLS for API
   VITE_API_URL_TEST: "https://localhost:7236",

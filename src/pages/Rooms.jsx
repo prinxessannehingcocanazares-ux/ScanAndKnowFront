@@ -1,15 +1,14 @@
-import { useState, useEffect } from "react";
-import { DoorOpen, User } from "lucide-react";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { Tabs, Tab, Badge } from "@mui/material";
 import getDepartments from "../api/getDepartments";
 import getRooms from "../api/getRooms";
-import { lazy, Suspense } from "react";
+import getSchedulesByUserId from "../api/getSchedulesByUserId";
 import LazySnackbar from "../pages/subPages/LazySnackbar";
 import { useAuth } from "../context/AuthContext";
-import getSchedulesByUserId from "../api/getSchedulesByUserId";
 
-const RoomDetailsDrawer = lazy(
-  () => import("../pages/subPages/RoomDetailsDrawer"),
-);
+const RoomDetailsDrawer = lazy(() => import("../pages/subPages/RoomDetailsDrawer"));
+const RoomsTab = lazy(() => import("../pages/subPages/RoomsTab"));
+const UnassignedSchedulesTab = lazy(() => import("../pages/subPages/UnassignedSchedulesTab"));
 
 const Rooms = () => {
   const { user } = useAuth();
@@ -17,6 +16,7 @@ const Rooms = () => {
   const [departments, setDepartments] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [unassignedSchedules, setUnassignedSchedules] = useState([]);
 
   const [selectedRoom, setSelectedRoom] = useState(null);
 
@@ -25,21 +25,18 @@ const Rooms = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const [loadingSchedules, setLoadingSchedules] = useState(true);
+  const [tabIndex, setTabIndex] = useState(0);
 
   /* ---------------- FETCH SCHEDULES ---------------- */
-
   const fetchSchedules = async () => {
     if (!user?.id) return;
-
     setLoadingSchedules(true);
 
     try {
       const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
-
       const response = await getSchedulesByUserId.post(
         `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`
       );
-
       const data = response.data || [];
 
       const mappedSchedules = data.map((s) => ({
@@ -48,17 +45,17 @@ const Rooms = () => {
         start: parseISOToLocalDate(s.scheduleStartTime),
         end: parseISOToLocalDate(s.scheduleEndTime),
         extendedProps: {
-          room: s.scheduleRoomId,
+          room: s.scheduleRoomId || null,
           day: s.scheduleDay,
         },
         rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
       }));
 
       setSchedules(mappedSchedules);
+      setUnassignedSchedules(mappedSchedules.filter(s => !s.extendedProps.room));
+
     } catch (error) {
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to fetch schedules"
-      );
+      setSnackbarMessage(error.response?.data?.message || "Failed to fetch schedules");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -66,131 +63,83 @@ const Rooms = () => {
     }
   };
 
-  useEffect(() => {
-    fetchSchedules();
-  }, [user?.id]);
+  useEffect(() => { fetchSchedules(); }, [user?.id]);
 
   /* ---------------- FETCH DEPARTMENTS ---------------- */
-
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const { VITE_GETDEPARTMENTS_ENDPOINT } = window.__ENV__ || {};
-        const response = await getDepartments.post(
-          VITE_GETDEPARTMENTS_ENDPOINT
-        );
-
+        const response = await getDepartments.post(VITE_GETDEPARTMENTS_ENDPOINT);
         setDepartments(response.data);
       } catch (error) {
-        setSnackbarMessage(
-          error.response?.data?.message || "Failed to fetch departments."
-        );
+        setSnackbarMessage(error.response?.data?.message || "Failed to fetch departments.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
     };
-
     fetchDepartments();
   }, []);
 
   /* ---------------- FETCH ROOMS ---------------- */
-
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         const { VITE_GETROOMS_ENDPOINT } = window.__ENV__ || {};
         const response = await getRooms.post(VITE_GETROOMS_ENDPOINT);
-
         setRooms(response.data);
       } catch (error) {
-        setSnackbarMessage(
-          error.response?.data?.message || "Failed to fetch rooms."
-        );
+        setSnackbarMessage(error.response?.data?.message || "Failed to fetch rooms.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
     };
-
     fetchRooms();
   }, []);
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="mb-8">
-        <p className="text-sm sm:text-base text-gray-500">
-          Monitor room status and capacity in real-time.
-        </p>
+      <div className="mb-4 text-gray-500">
+        Monitor room status and capacity in real-time.
       </div>
 
-      {departments.map((dept) => {
-        const roomsPerDept = rooms.filter(
-          (room) => room.roomDepartmentId === dept.departmentId
-        );
-
-        if (roomsPerDept.length === 0) return null;
-
-        return (
-          <div key={dept.departmentId} className="mb-8">
-            <h3 className="text-base sm:text-lg font-bold text-indigo-600 mb-3">
-              {dept.departmentCollegeName}
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {roomsPerDept.map((room) => {
-
-                const roomSchedules = schedules.filter(
-                  (s) => s.extendedProps.room === room.roomId
-                );
-
-                return (
-                  <div
-                    key={room.roomId}
-                    onClick={() =>
-                      setSelectedRoom({
-                        ...room,
-                        departmentName: dept.departmentCollegeName,
-                        schedules: roomSchedules
-                      })
-                    }
-                    className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-                        <DoorOpen size={18} />
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">
-                          {room.roomCode}
-                        </p>
-
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <User size={12} />
-                          Capacity: {room.roomCapacity}
-                        </p>
-
-                        <p className="text-xs text-indigo-500 mt-1">
-                          {roomSchedules.length} schedules
-                        </p>
-
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Drawer */}
-      <Suspense fallback={null}>
-        <RoomDetailsDrawer
-          selectedRoom={selectedRoom}
-          onClose={() => setSelectedRoom(null)}
+      {/* ---------------- Tabs ---------------- */}
+      <Tabs value={tabIndex} onChange={(_, newValue) => setTabIndex(newValue)} sx={{ mb: 6 }}>
+        <Tab label="Rooms" />
+        <Tab
+          label={
+            <Badge color="error" badgeContent={unassignedSchedules.length} max={99}>
+              Schedules
+            </Badge>
+          }
         />
+      </Tabs>
+
+      {/* ---------------- Tab Panels ---------------- */}
+      <Suspense fallback={<p>Loading...</p>}>
+        {tabIndex === 0 && (
+          <RoomsTab
+            departments={departments}
+            rooms={rooms}
+            schedules={schedules}
+            setSelectedRoom={setSelectedRoom}
+          />
+        )}
+
+       {tabIndex === 1 && (
+  <UnassignedSchedulesTab 
+    schedules={unassignedSchedules} 
+    refreshSchedules={fetchSchedules} // <-- pass the refresh function
+  />
+)}
       </Suspense>
 
+      {/* Room Details Drawer */}
+      <Suspense fallback={null}>
+        <RoomDetailsDrawer selectedRoom={selectedRoom} onClose={() => setSelectedRoom(null)} />
+      </Suspense>
+
+      {/* Snackbar */}
       <LazySnackbar
         open={snackbarOpen}
         onClose={() => setSnackbarOpen(false)}
@@ -201,6 +150,7 @@ const Rooms = () => {
   );
 };
 
+/* ---------------- UTIL ---------------- */
 function parseISOToLocalDate(isoString) {
   const [datePart, timePart] = isoString.split("T");
   const [year, month, day] = datePart.split("-").map(Number);
