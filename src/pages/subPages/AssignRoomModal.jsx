@@ -20,9 +20,13 @@ const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
     const fetchRooms = async () => {
       setLoading(true);
       try {
-        const { VITE_GETAVAILABLEROOMS_ENDPOINT } = window.__ENV__ || {};
-        const start = new Date(schedule.start);
+        const { VITE_GETAVAILABLEROOMS_ENDPOINT } = window.__ENV__ || {};       
+
+         const start = new Date(schedule.start);
+        start.setHours(start.getHours() + 8);
+
         const end = new Date(schedule.end);
+        end.setHours(end.getHours() + 8);
 
         const response = await getAvailableRooms.post(VITE_GETAVAILABLEROOMS_ENDPOINT, {
           id: schedule.id,

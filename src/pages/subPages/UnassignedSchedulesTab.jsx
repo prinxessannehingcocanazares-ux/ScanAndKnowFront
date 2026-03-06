@@ -1,16 +1,21 @@
 import { useState } from "react";
-import AssignRoomModal from "./AssignRoomModal"; // import the new modal
+import AssignRoomModal from "./AssignRoomModal";
 
 const UnassignedSchedulesTab = ({ schedules, refreshSchedules }) => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
 
+  // Sort schedules by descending start date
+  const sortedSchedules = [...schedules].sort(
+    (a, b) => a.start.getTime() - b.start.getTime()
+  );
+
   return (
     <>
-      {schedules.length === 0 ? (
+      {sortedSchedules.length === 0 ? (
         <p className="text-gray-500">All schedules are assigned to rooms.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {schedules.map((s) => (
+          {sortedSchedules.map((s) => (
             <div
               key={s.id}
               onClick={() => setSelectedSchedule(s)}
