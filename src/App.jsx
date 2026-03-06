@@ -13,6 +13,7 @@ import Rooms from './pages/Rooms';
 import QRScanner from './pages/QRScanner';
 import Attendance from './pages/Attendance';
 import Reports from './pages/Reports';
+import QRSuccess from './pages/QRSuccess';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // --- Layouts ---
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/rooms" element={<ProtectedRoute title="Room Management"><Rooms /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute title="Attendance Logs"><Attendance /></ProtectedRoute>} />
           <Route path="/qr-scanner" element={<ProtectedRoute title="QR Scanner"><QRScanner /></ProtectedRoute>} />
+          <Route path="/qr-success/:roomId" element={<ProtectedRoute title="QR Success"><QRSuccess /></ProtectedRoute>} />
           {/* <Route path="/reports" element={<ProtectedRoute title="Teacher Reports"><Reports /></ProtectedRoute>} /> */}
 
           {/* Fallback */}
