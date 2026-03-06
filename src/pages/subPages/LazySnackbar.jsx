@@ -1,4 +1,3 @@
-import React from "react";
 import { Snackbar, Alert } from "@mui/material";
 
 export default function LazySnackbar({ open, onClose, message, severity }) {
