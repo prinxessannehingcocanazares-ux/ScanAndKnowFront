@@ -28,6 +28,7 @@ const Schedule = () => {
     startTime: "09:00",
     endTime: "10:00",
     repeatWeekly: false,
+    repeatDaily: false,
   });
 
   const [selectedSchedule, setSelectedSchedule] = useState(null);
@@ -57,9 +58,9 @@ const Schedule = () => {
         extendedProps: {
           room: s.scheduleRoomId || null,
           day: s.scheduleDay,
+          isUnassigned: !s.scheduleRoomId,
         },
-        rrule: s.scheduleRepeatWeekly ? { freq: "weekly" } : null,
-        isUnassigned: !s.scheduleRoomId,
+        rrule: null,
       }));
       setSchedules(mappedSchedules);
       setLoadingSchedules(false);
@@ -86,82 +87,92 @@ const Schedule = () => {
 
   // Handle schedule submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { subject, day, repeatWeekly, room } = formData;
+  e.preventDefault();
 
-    if (!subject) {
-      setSnackbar({
-        open: true,
-        message: "Please enter a subject",
-        severity: "warning",
-      });
-      return;
-    }
+  const { subject, day, repeatWeekly, repeatDaily, room } = formData;
 
-    const payload = {
-      ScheduleSubject: subject,
-      ScheduleDay: day,
-      ScheduleStartTime: `${formData.day}T${formData.startTime}:00`,
-      ScheduleEndTime: `${formData.day}T${formData.endTime}:00`,
-      ScheduleRepeatWeekly: repeatWeekly,
-      ScheduleUserId: user?.id || null,
-      ScheduleRoomId: room || null,
-    };
+  if (!subject) {
+    setSnackbar({
+      open: true,
+      message: "Please enter a subject",
+      severity: "warning",
+    });
+    return;
+  }
 
-    try {
-      const { VITE_CREATESCHEDULE_ENDPOINT } = window.__ENV__ || {};
-      const saveResponse = await createSchedules.post(
-        VITE_CREATESCHEDULE_ENDPOINT,
-        payload,
-      );
-      const result = saveResponse.data;
-      const dayString = getDayString(result.scheduleDay);
-      if (result.scheduleStatus) {
-        setSchedules((prev) => [
-          ...prev,
-          {
-            id: result.scheduleId,
-            title: result.scheduleSubject,
-            start: parseISOToLocalDate(result.scheduleStartTime),
-            end: parseISOToLocalDate(result.scheduleEndTime),
-            extendedProps: {
-              room: result.scheduleRoomId || null,
-              day: dayString,
-              isUnassigned: !result.scheduleRoomId,
-            },
-            rrule: result.scheduleRepeatWeekly ? { freq: "weekly" } : null,
-          },
-        ]);
-
-        setShowAdd(false);
-        setFormData({
-          subject: "",
-          day: "Monday",
-          room: "",
-          startTime: "09:00",
-          endTime: "10:00",
-          repeatWeekly: false,
-        });
-
-        setSnackbar({
-          open: true,
-          message: "Schedule saved successfully!",
-          severity: "success",
-        });
-      } else {
-        throw new Error(result.message || "Failed to save schedule");
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to save schedule",
-        severity: "error",
-      });
-    }
+  const payload = {
+    ScheduleSubject: subject,
+    ScheduleDay: day,
+    ScheduleStartTime: `${formData.day}T${formData.startTime}:00`,
+    ScheduleEndTime: `${formData.day}T${formData.endTime}:00`,
+    ScheduleRepeatWeekly: repeatWeekly,
+    ScheduleRepeatDaily: repeatDaily,
+    ScheduleUserId: user?.id || null,
+    ScheduleRoomId: room || null,
   };
+console.log("Submitting schedule with payload:", payload);
+  try {
+    const { VITE_CREATESCHEDULE_ENDPOINT } = window.__ENV__ || {};
+
+    const saveResponse = await createSchedules.post(
+      VITE_CREATESCHEDULE_ENDPOINT,
+      payload
+    );
+
+    const result = saveResponse.data;
+    console.log("Schedule creation response:", result);
+
+    if (Array.isArray(result)) {
+      const newEvents = result.map((item) => {
+        const dayString = getDayString(item.scheduleDay);
+
+        return {
+          id: item.scheduleId,
+          title: item.scheduleSubject,
+          start: parseISOToLocalDate(item.scheduleStartTime),
+          end: parseISOToLocalDate(item.scheduleEndTime),
+          extendedProps: {
+            room: item.scheduleRoomId || null,
+            day: dayString,
+            isUnassigned: !item.scheduleRoomId,
+          },
+          rrule:null,
+        };
+      });
+
+      setSchedules((prev) => [...prev, ...newEvents]);
+
+      setShowAdd(false);
+
+      setFormData({
+        subject: "",
+        day: "Monday",
+        room: "",
+        startTime: "09:00",
+        endTime: "10:00",
+        repeatWeekly: false,
+        repeatDaily: false,
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Schedule saved successfully!",
+        severity: "success",
+      });
+    } else {
+      throw new Error("Unexpected response format");
+    }
+  } catch (err) {
+    setSnackbar({
+      open: true,
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to save schedule",
+      severity: "error",
+    });
+  }
+};
 
   return (
     <div className="p-4 sm:p-8">
@@ -277,6 +288,7 @@ const Schedule = () => {
               setFormData={setFormData}
               handleSubmit={handleSubmit}
               setShowAdd={setShowAdd}
+              setSnackbar={setSnackbar}
             />
           </Suspense>
         )}
