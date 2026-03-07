@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd, setSnackbar }) => {
+const AddScheduleModal = ({
+  formData,
+  setFormData,
+  handleSubmit,
+  setShowAdd,
+  setSnackbar,
+}) => {
   const [loading, setLoading] = useState(false);
 
   // Wrapped submit to handle loading state + validation
@@ -47,6 +53,23 @@ const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd, set
       return;
     }
 
+    // Validate time range (7:00 AM - 7:00 PM)
+    const minTime = "07:00";
+    const maxTime = "19:00";
+
+    if (
+      formData.startTime < minTime ||
+      formData.startTime > maxTime ||
+      formData.endTime < minTime ||
+      formData.endTime > maxTime
+    ) {
+      setSnackbar?.({
+        open: true,
+        message: "Schedule time must be between 7:00 AM and 7:00 PM",
+        severity: "warning",
+      });
+      return;
+    }
     // Everything is valid, proceed to submit
     setLoading(true);
     try {
@@ -82,7 +105,9 @@ const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd, set
             type="text"
             placeholder="Subject Name"
             value={formData.subject}
-            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, subject: e.target.value })
+            }
             className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
           />
 
@@ -90,7 +115,9 @@ const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd, set
             <input
               type="date"
               value={formData.day}
-              onChange={(e) => setFormData({ ...formData, day: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, day: e.target.value })
+              }
               className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
             />
           </div>
@@ -99,13 +126,17 @@ const AddScheduleModal = ({ formData, setFormData, handleSubmit, setShowAdd, set
             <input
               type="time"
               value={formData.startTime}
-              onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, startTime: e.target.value })
+              }
               className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
             />
             <input
               type="time"
               value={formData.endTime}
-              onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, endTime: e.target.value })
+              }
               className="w-full px-4 py-3 bg-gray-50 border rounded-xl"
             />
           </div>
