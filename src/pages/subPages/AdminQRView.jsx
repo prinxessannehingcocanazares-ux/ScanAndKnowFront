@@ -78,18 +78,24 @@ const AdminQRView = () => {
 
       {Object.entries(groupedRooms).map(([department, rooms]) => (
         <div key={department} className="mb-10">
-          <h3 className="text-lg font-bold text-indigo-600 mb-4">{department}</h3>
+          <h3 className="text-lg font-bold text-indigo-600 mb-4">
+            {department}
+          </h3>
 
           <div className="grid grid-cols-3 gap-6">
             {rooms.map((room) => (
-              <div key={room.id} className="bg-white p-6 rounded-xl shadow text-center">
+              <div
+                key={room.id}
+                className="bg-white p-6 rounded-xl shadow text-center"
+              >
                 <h4 className="font-semibold mb-3">{room.roomCode}</h4>
 
                 <QRCodeCanvas
                   id={`qr-${room.id}`}
                   value={JSON.stringify({
-                    roomId: room.id,
-                    roomCode: room.roomCode,
+                    roomId: room.roomId, // the actual room ID
+                    roomCode: room.roomCode, // room code or name
+                    roomName: room.roomName || room.roomCode, // optional: human-readable name
                     roomCapacity: room.roomCapacity,
                     roomDepartmentId: room.roomDepartmentId,
                     qrKey: "scanandknow-qr",
@@ -111,7 +117,11 @@ const AdminQRView = () => {
         </div>
       ))}
 
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+      >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
     </div>

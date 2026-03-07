@@ -30,9 +30,9 @@ const UserScannerView = () => {
               setScanResult(decodedText);
 
               setTimeout(() => {
-                navigate(`/qr-success/:roomId${data.roomId}`, {
-                  state: { payload: data },
-                });
+             navigate(`/qr-success`, {
+  state: { payload: data },
+});
               }, 1200);
             } else {
               setScanStatus("error");

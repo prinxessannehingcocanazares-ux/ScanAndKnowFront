@@ -46,7 +46,7 @@ const Attendance = () => {
     id: item.scheduleId,
     date: item.scheduleDay,
     subject: item.scheduleSubject,
-    room: item.scheduleRoomId ? `Room ${item.scheduleRoomId}` : "N/A",
+    room: item.scheduleRoomId ? `Room ${item.scheduleRoomId}` : "Not Assigned",
     timeIn: format(start, "hh:mm a"),
     timeOut: format(end, "hh:mm a"),
     duration: `${hours}h ${minutes}m`,
