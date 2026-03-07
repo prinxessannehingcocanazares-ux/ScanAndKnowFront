@@ -18,4 +18,5 @@ window.__ENV__ = {
   VITE_GETAVAILABLEROOMS_ENDPOINT: "/api/User/GetAvailableRooms",
   VITE_UPDATESCHEDULEBYID_ENDPOINT: "/api/User/UpdateScheduleById",
   VITE_GETROOMBYID_ENDPOINT: "/api/User/GetRoomById",
+  VITE_UPDATESTARTOREND_ENDPOINT: "/api/User/UpdateStartOrEnd",
 }

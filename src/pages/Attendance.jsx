@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import getSchedulesByUserId from "../api/getSchedulesByUserId";
 import { useAuth } from "../context/AuthContext";
 import LazySnackbar from "../pages/subPages/LazySnackbar";
+import getRoomById from "../api/getRoomById";
 
 const Attendance = () => {
   const { user } = useAuth();
@@ -12,52 +13,69 @@ const Attendance = () => {
   const [search, setSearch] = useState("");
   const [schedules, setSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
+  const [rooms, setRooms] = useState({}); // roomId -> roomCode mapping
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   /* ---------------- FETCH SCHEDULES ---------------- */
-
   const fetchSchedules = async () => {
     if (!user?.id) return;
-
     setLoadingSchedules(true);
 
     try {
       const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
-
       const response = await getSchedulesByUserId.post(
         `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`
       );
 
       const data = response.data || [];
+      console.log("Fetched schedules:", data);
 
-      console.log("Fetched schedules:", data); // Debug log
-     const mappedSchedules = data.map((item) => {
-  const start = new Date(item.scheduleStartTime);
-  const end = new Date(item.scheduleEndTime);
+      // Fetch room info for each unique roomId
+      const uniqueRoomIds = [...new Set(data.map((s) => s.scheduleRoomId).filter(Boolean))];
+      const roomMap = {};
+      for (const roomId of uniqueRoomIds) {
+        try {
+          const { VITE_GETROOMBYID_ENDPOINT } = window.__ENV__ || {};
+          const roomResp = await getRoomById.post(`${VITE_GETROOMBYID_ENDPOINT}?id=${roomId}`);
+          roomMap[roomId] = roomResp.data?.roomCode || `Room ${roomId}`;
+        } catch (err) {
+          console.error(`Failed to fetch room ${roomId}`, err);
+          roomMap[roomId] = `Room ${roomId}`;
+        }
+      }
+      setRooms(roomMap);
 
-  const durationMs = end - start;
-  const hours = Math.floor(durationMs / (1000 * 60 * 60));
-  const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+      // Map schedules with proper room code
+      const mappedSchedules = data.map((item) => {
+        const start = item.scheduleStart ? new Date(item.scheduleStart) : null;
+        const end = item.scheduleEnd ? new Date(item.scheduleEnd) : null;
 
-  return {
-    id: item.scheduleId,
-    date: item.scheduleDay,
-    subject: item.scheduleSubject,
-    room: item.scheduleRoomId ? `Room ${item.scheduleRoomId}` : "Not Assigned",
-    timeIn: format(start, "hh:mm a"),
-    timeOut: format(end, "hh:mm a"),
-    duration: `${hours}h ${minutes}m`,
-  };
+        let duration = "";
+        if (start && end) {
+          const durationMs = end - start;
+          const hours = Math.floor(durationMs / (1000 * 60 * 60));
+          const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+          duration = `${hours}h ${minutes}m`;
+        }
+
+        return {
+          id: item.scheduleId,
+          date: item.scheduleDay,
+          subject: item.scheduleSubject,
+          room: item.scheduleRoomId ? roomMap[item.scheduleRoomId] : "Not Assigned",
+          timeIn: start ? format(start, "hh:mm a") : "--:--",
+          timeOut: end ? format(end, "hh:mm a") : "--:--",
+          duration,
+        };
       });
 
       setSchedules(mappedSchedules);
     } catch (error) {
-      setSnackbarMessage(
-        error.response?.data?.message || "Failed to fetch schedules"
-      );
+      console.error("Error fetching schedules:", error);
+      setSnackbarMessage(error.response?.data?.message || "Failed to fetch schedules");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -70,7 +88,6 @@ const Attendance = () => {
   }, [user?.id]);
 
   /* ---------------- SEARCH ---------------- */
-
   const filteredLogs = schedules.filter(
     (log) =>
       log.subject?.toLowerCase().includes(search.toLowerCase()) ||
@@ -78,7 +95,6 @@ const Attendance = () => {
   );
 
   /* ---------------- EXPORT ---------------- */
-
   const exportToExcel = () => {
     const data = filteredLogs.map((log) => ({
       Date: format(new Date(log.date), "yyyy-MM-dd"),
@@ -91,9 +107,7 @@ const Attendance = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-
     XLSX.writeFile(workbook, "attendance_logs.xlsx");
   };
 
@@ -112,7 +126,6 @@ const Attendance = () => {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               size={16}
             />
-
             <input
               type="text"
               placeholder="Search subject or room..."
@@ -158,23 +171,18 @@ const Attendance = () => {
                   <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 text-sm sm:text-base">
                     {format(new Date(log.date), "MMM dd, yyyy")}
                   </td>
-
                   <td className="px-4 sm:px-6 py-4 text-gray-600 text-sm sm:text-base">
                     {log.subject}
                   </td>
-
                   <td className="px-4 sm:px-6 py-4 text-gray-600 text-sm sm:text-base">
                     {log.room}
                   </td>
-
                   <td className="px-4 sm:px-6 py-4 text-gray-600 text-sm sm:text-base">
                     {log.timeIn}
                   </td>
-
                   <td className="px-4 sm:px-6 py-4 text-gray-600 text-sm sm:text-base">
                     {log.timeOut}
                   </td>
-
                   <td className="px-4 sm:px-6 py-4">
                     <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] sm:text-xs font-bold">
                       {log.duration}
@@ -187,7 +195,6 @@ const Attendance = () => {
         </div>
       </div>
 
-      {/* Snackbar */}
       <LazySnackbar
         open={snackbarOpen}
         onClose={() => setSnackbarOpen(false)}
