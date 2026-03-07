@@ -1,3 +1,4 @@
+import { Subject } from "@mui/icons-material";
 
 export const mockUser = {
   id: '1',
@@ -35,9 +36,9 @@ export const mockRooms = [
 ];
 
 export const mockAttendance = [
-  { id: 'a1', date: '2024-05-20', room: 'Lab 101', timeIn: '08:55 AM', timeOut: '11:05 AM' },
-  { id: 'a2', date: '2024-05-21', room: 'Lecture Hall A', timeIn: '12:50 PM', timeOut: '03:10 PM' },
-  { id: 'a3', date: '2024-05-22', room: 'Lab 102', timeIn: '09:45 AM', timeOut: '12:15 PM' },
+  { id: 'a1', subject: 'science', date: '2024-05-20', room: 'Lab 101', timeIn: '08:55 AM', timeOut: '11:05 AM' },
+  { id: 'a2', subject: 'mathematics', date: '2024-05-21', room: 'Lecture Hall A', timeIn: '12:50 PM', timeOut: '03:10 PM' },
+  { id: 'a3', subject: 'physics', date: '2024-05-22', room: 'Lab 102', timeIn: '09:45 AM', timeOut: '12:15 PM' },
 ];
 
 export const mockReports = [
