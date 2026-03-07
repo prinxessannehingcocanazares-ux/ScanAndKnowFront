@@ -43,23 +43,36 @@ const RoomPayload = () => {
       const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
 
       const response = await getSchedulesByUserId.post(
-        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`
+        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
       );
 
       const data = response.data || [];
+      console.log("Fetched schedules:", data);
+
+      // Only schedules for this room AND with scheduleEndTime null or empty
       const roomSchedules = data.filter(
-        (s) => s.scheduleRoomId === payload.roomId
+        (s) =>
+          s.scheduleRoomId === payload.roomId &&
+          (!s.scheduleEnd || s.scheduleEnd === ""),
       );
 
+      console.log("Filtered room schedules:", roomSchedules);
+
       const mappedSchedules = roomSchedules.map((item) => {
-        const start = item.scheduleStartTime ? new Date(item.scheduleStartTime) : null;
-        const end = item.scheduleEndTime ? new Date(item.scheduleEndTime) : null;
+        const start = item.scheduleStartTime
+          ? new Date(item.scheduleStartTime)
+          : null;
+        const end = item.scheduleEndTime
+          ? new Date(item.scheduleEndTime)
+          : null;
 
         let duration = "";
         if (start && end) {
           const durationMs = end - start;
           const hours = Math.floor(durationMs / (1000 * 60 * 60));
-          const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+          const minutes = Math.floor(
+            (durationMs % (1000 * 60 * 60)) / (1000 * 60),
+          );
           duration = `${hours}h ${minutes}m`;
         }
 
@@ -77,7 +90,7 @@ const RoomPayload = () => {
     } catch (error) {
       console.error(error);
       setSnackbarMessage(
-        error.response?.data?.message || "Failed to fetch schedules"
+        error.response?.data?.message || "Failed to fetch schedules",
       );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -103,17 +116,22 @@ const RoomPayload = () => {
 
       const { VITE_UPDATESTARTOREND_ENDPOINT } = window.__ENV__ || {};
 
-      const response = await updateStartOrEnd.post(VITE_UPDATESTARTOREND_ENDPOINT, {
-        userId: user.id,
-        scheduleId,
-        start: isStart,
-        end: !isStart,
-      });
+      const response = await updateStartOrEnd.post(
+        VITE_UPDATESTARTOREND_ENDPOINT,
+        {
+          userId: user.id,
+          scheduleId,
+          start: isStart,
+          end: !isStart,
+        },
+      );
 
       console.log("Update response:", response.data);
 
       setSnackbarMessage(response.data?.message || "Update failed");
-      setSnackbarSeverity(response.data?.message === "ok" ? "success" : "error");
+      setSnackbarSeverity(
+        response.data?.message === "ok" ? "success" : "error",
+      );
       setSnackbarOpen(true);
 
       if (response.data?.message === "ok") {
@@ -122,7 +140,7 @@ const RoomPayload = () => {
     } catch (error) {
       console.error(error);
       setSnackbarMessage(
-        error.response?.data?.message || "Failed to update schedule"
+        error.response?.data?.message || "Failed to update schedule",
       );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -153,7 +171,9 @@ const RoomPayload = () => {
               <tr className="bg-gray-100 text-gray-500 text-xs uppercase tracking-wider">
                 <th className="px-4 py-2 font-semibold">Date</th>
                 <th className="px-4 py-2 font-semibold">Subject</th>
-                <th className="px-4 py-2 font-semibold">Scheduled Start Time</th>
+                <th className="px-4 py-2 font-semibold">
+                  Scheduled Start Time
+                </th>
                 <th className="px-4 py-2 font-semibold">Scheduled End Time</th>
                 <th className="px-4 py-2 font-semibold">Duration</th>
               </tr>
@@ -169,10 +189,18 @@ const RoomPayload = () => {
                     <td className="px-4 py-2 text-gray-900 text-sm">
                       {format(new Date(sched.date), "MMM dd, yyyy")}
                     </td>
-                    <td className="px-4 py-2 text-gray-700 text-sm">{sched.subject}</td>
-                    <td className="px-4 py-2 text-gray-700 text-sm">{sched.timeIn}</td>
-                    <td className="px-4 py-2 text-gray-700 text-sm">{sched.timeOut}</td>
-                    <td className="px-4 py-2 text-gray-700 text-sm">{sched.duration}</td>
+                    <td className="px-4 py-2 text-gray-700 text-sm">
+                      {sched.subject}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700 text-sm">
+                      {sched.timeIn}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700 text-sm">
+                      {sched.timeOut}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700 text-sm">
+                      {sched.duration}
+                    </td>
                   </tr>
 
                   {selectedSchedule === sched.id && (
@@ -180,7 +208,9 @@ const RoomPayload = () => {
                       <td colSpan="5" className="px-4 py-4 bg-gray-100">
                         <div className="flex gap-4">
                           <button
-                            onClick={() => handleUpdateStartOrEnd(sched.id, true)}
+                            onClick={() =>
+                              handleUpdateStartOrEnd(sched.id, true)
+                            }
                             className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
                             disabled={loadingButton[sched.id] === "start"}
                           >
@@ -190,7 +220,9 @@ const RoomPayload = () => {
                           </button>
 
                           <button
-                            onClick={() => handleUpdateStartOrEnd(sched.id, false)}
+                            onClick={() =>
+                              handleUpdateStartOrEnd(sched.id, false)
+                            }
                             className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
                             disabled={loadingButton[sched.id] === "end"}
                           >
