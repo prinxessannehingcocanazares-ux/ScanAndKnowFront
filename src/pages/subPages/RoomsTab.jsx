@@ -1,10 +1,13 @@
 import { DoorOpen, User } from "lucide-react";
 
 const RoomsTab = ({ departments, rooms, schedules, setSelectedRoom }) => {
+  console.log("Schedules:", schedules);
   return (
     <>
       {departments.map((dept) => {
-        const roomsPerDept = rooms.filter(r => r.roomDepartmentId === dept.departmentId);
+        const roomsPerDept = rooms.filter(
+          (r) => r.roomDepartmentId === dept.departmentId,
+        );
         if (roomsPerDept.length === 0) return null;
 
         return (
@@ -15,13 +18,29 @@ const RoomsTab = ({ departments, rooms, schedules, setSelectedRoom }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {roomsPerDept.map((room) => {
-                const roomSchedules = schedules.filter(s => s.extendedProps.room === room.roomId);
+                const roomSchedules = schedules.filter(
+                  (s) => s.extendedProps.room === room.roomId,
+                );
                 const hasSchedules = roomSchedules.length > 0;
+
+                // Count attended vs not yet attended
+                const attendedCount = roomSchedules.filter(
+                  (s) => s.scheduleEnd,
+                ).length;
+                const notAttendedCount = roomSchedules.filter(
+                  (s) => !s.scheduleEnd,
+                ).length;
 
                 return (
                   <div
                     key={room.roomId}
-                    onClick={() => setSelectedRoom({ ...room, departmentName: dept.departmentCollegeName, schedules: roomSchedules })}
+                    onClick={() =>
+                      setSelectedRoom({
+                        ...room,
+                        departmentName: dept.departmentCollegeName,
+                        schedules: roomSchedules,
+                      })
+                    }
                     className={`relative bg-white border rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer
                       ${hasSchedules ? "border-green-500" : "border-gray-200"}`}
                   >
@@ -41,11 +60,36 @@ const RoomsTab = ({ departments, rooms, schedules, setSelectedRoom }) => {
                       </div>
 
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{room.roomCode}</p>
+                        <p className="text-sm font-bold text-gray-900">
+                          {room.roomCode}
+                        </p>
                         <p className="text-xs text-gray-500 flex items-center gap-1">
                           <User size={12} /> Capacity: {room.roomCapacity}
                         </p>
-                        <p className="text-xs text-indigo-500 mt-1">{roomSchedules.length} schedules</p>
+
+                        {hasSchedules && (
+                          <p className="text-xs mt-1">
+                            <span className="text-green-600 font-semibold">
+                              Attended: {attendedCount}
+                            </span>
+                            {" / "}
+                            {notAttendedCount > 0 ? (
+                              <span className="text-red-600 font-semibold">
+                                Not Yet: {notAttendedCount}
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">
+                                Not Yet: {notAttendedCount}
+                              </span>
+                            )}
+                          </p>
+                        )}
+
+                        {!hasSchedules && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            No schedules
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

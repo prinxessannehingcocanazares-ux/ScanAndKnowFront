@@ -6,9 +6,13 @@ import getSchedulesByUserId from "../api/getSchedulesByUserId";
 import LazySnackbar from "../pages/subPages/LazySnackbar";
 import { useAuth } from "../context/AuthContext";
 
-const RoomDetailsDrawer = lazy(() => import("../pages/subPages/RoomDetailsDrawer"));
+const RoomDetailsDrawer = lazy(
+  () => import("../pages/subPages/RoomDetailsDrawer"),
+);
 const RoomsTab = lazy(() => import("../pages/subPages/RoomsTab"));
-const UnassignedSchedulesTab = lazy(() => import("../pages/subPages/UnassignedSchedulesTab"));
+const UnassignedSchedulesTab = lazy(
+  () => import("../pages/subPages/UnassignedSchedulesTab"),
+);
 
 const Rooms = () => {
   const { user } = useAuth();
@@ -35,7 +39,7 @@ const Rooms = () => {
     try {
       const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
       const response = await getSchedulesByUserId.post(
-        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`
+        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
       );
       const data = response.data || [];
 
@@ -44,6 +48,7 @@ const Rooms = () => {
         title: s.scheduleSubject,
         start: parseISOToLocalDate(s.scheduleStartTime),
         end: parseISOToLocalDate(s.scheduleEndTime),
+        scheduleEnd: s.scheduleEnd,
         extendedProps: {
           room: s.scheduleRoomId || null,
           day: s.scheduleDay,
@@ -52,10 +57,13 @@ const Rooms = () => {
       }));
 
       setSchedules(mappedSchedules);
-      setUnassignedSchedules(mappedSchedules.filter(s => !s.extendedProps.room));
-
+      setUnassignedSchedules(
+        mappedSchedules.filter((s) => !s.extendedProps.room),
+      );
     } catch (error) {
-      setSnackbarMessage(error.response?.data?.message || "Failed to fetch schedules");
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to fetch schedules",
+      );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -63,17 +71,23 @@ const Rooms = () => {
     }
   };
 
-  useEffect(() => { fetchSchedules(); }, [user?.id]);
+  useEffect(() => {
+    fetchSchedules();
+  }, [user?.id]);
 
   /* ---------------- FETCH DEPARTMENTS ---------------- */
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const { VITE_GETDEPARTMENTS_ENDPOINT } = window.__ENV__ || {};
-        const response = await getDepartments.post(VITE_GETDEPARTMENTS_ENDPOINT);
+        const response = await getDepartments.post(
+          VITE_GETDEPARTMENTS_ENDPOINT,
+        );
         setDepartments(response.data);
       } catch (error) {
-        setSnackbarMessage(error.response?.data?.message || "Failed to fetch departments.");
+        setSnackbarMessage(
+          error.response?.data?.message || "Failed to fetch departments.",
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
@@ -89,7 +103,9 @@ const Rooms = () => {
         const response = await getRooms.post(VITE_GETROOMS_ENDPOINT);
         setRooms(response.data);
       } catch (error) {
-        setSnackbarMessage(error.response?.data?.message || "Failed to fetch rooms.");
+        setSnackbarMessage(
+          error.response?.data?.message || "Failed to fetch rooms.",
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
@@ -104,11 +120,19 @@ const Rooms = () => {
       </div>
 
       {/* ---------------- Tabs ---------------- */}
-      <Tabs value={tabIndex} onChange={(_, newValue) => setTabIndex(newValue)} sx={{ mb: 6 }}>
+      <Tabs
+        value={tabIndex}
+        onChange={(_, newValue) => setTabIndex(newValue)}
+        sx={{ mb: 6 }}
+      >
         <Tab label="Rooms" />
         <Tab
           label={
-            <Badge color="error" badgeContent={unassignedSchedules.length} max={99}>
+            <Badge
+              color="error"
+              badgeContent={unassignedSchedules.length}
+              max={99}
+            >
               Schedules
             </Badge>
           }
@@ -126,17 +150,20 @@ const Rooms = () => {
           />
         )}
 
-       {tabIndex === 1 && (
-  <UnassignedSchedulesTab 
-    schedules={unassignedSchedules} 
-    refreshSchedules={fetchSchedules} // <-- pass the refresh function
-  />
-)}
+        {tabIndex === 1 && (
+          <UnassignedSchedulesTab
+            schedules={unassignedSchedules}
+            refreshSchedules={fetchSchedules} // <-- pass the refresh function
+          />
+        )}
       </Suspense>
 
       {/* Room Details Drawer */}
       <Suspense fallback={null}>
-        <RoomDetailsDrawer selectedRoom={selectedRoom} onClose={() => setSelectedRoom(null)} />
+        <RoomDetailsDrawer
+          selectedRoom={selectedRoom}
+          onClose={() => setSelectedRoom(null)}
+        />
       </Suspense>
 
       {/* Snackbar */}
