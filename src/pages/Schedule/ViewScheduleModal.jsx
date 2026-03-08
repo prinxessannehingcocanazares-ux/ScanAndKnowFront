@@ -5,7 +5,7 @@ import getAvailableRooms from "../../api/getAvailableRooms";
 import updateScheduleById from "../../api/updateScheduleById";
 import getRoomById from "../../api/getRoomById";
 import getDepartmentById from "../../api/getDepartmentById";
-const LazySnackbar = lazy(() => import("../../pages/subPages/LazySnackbar"));
+const LazySnackbar = lazy(() => import("../subPages/LazySnackbar"));
 
 const ViewScheduleModal = ({ schedule, onClose, onRoomSelect }) => {
   if (!schedule) return null;

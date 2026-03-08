@@ -1,11 +1,11 @@
 // src/pages/RoomPayload.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import getSchedulesByUserId from "../api/getSchedulesByUserId";
-import updateStartOrEnd from "../api/updateStartOrEnd";
+import { useAuth } from "../../context/AuthContext";
+import getSchedulesByUserId from "../../api/getSchedulesByUserId";
+import updateStartOrEnd from "../../api/updateStartOrEnd";
 import { format } from "date-fns";
-import LazySnackbar from "./subPages/LazySnackbar";
+import LazySnackbar from "../../utility/LazySnackbar";
 
 const RoomPayload = () => {
   const { user } = useAuth();
@@ -47,7 +47,6 @@ const RoomPayload = () => {
       );
 
       const data = response.data || [];
-      console.log("Fetched schedules:", data);
 
       // Only schedules for this room AND with scheduleEndTime null or empty
       const roomSchedules = data.filter(
@@ -55,8 +54,6 @@ const RoomPayload = () => {
           s.scheduleRoomId === payload.roomId &&
           (!s.scheduleEnd || s.scheduleEnd === ""),
       );
-
-      console.log("Filtered room schedules:", roomSchedules);
 
       const mappedSchedules = roomSchedules.map((item) => {
         const start = item.scheduleStartTime
@@ -125,8 +122,6 @@ const RoomPayload = () => {
           end: !isStart,
         },
       );
-
-      console.log("Update response:", response.data);
 
       setSnackbarMessage(response.data?.message || "Update failed");
       setSnackbarSeverity(

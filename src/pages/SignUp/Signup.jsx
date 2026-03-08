@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import Step1 from "./subPages/Step1";
-import Step2 from "./subPages/Step2";
-import Step3 from "./subPages/Step3";
-import signUpApi from "../api/signUpApi";
-import getDepartments from "../api/getDepartments";
-import getPositions from "../api/getPositions";
+import Step1 from "./Step1";
+import Step2 from "./Step2";
+import Step3 from "./Step3";
+import signUpApi from "../../api/signUpApi";
+import getDepartments from "../../api/getDepartments";
+import getPositions from "../../api/getPositions";
 import { Snackbar, Alert } from "@mui/material";
 
 const Signup = () => {

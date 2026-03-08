@@ -3,16 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Landing from './pages/Landing';
-import Login from './pages/Login';
-import AboutUs from './pages/AboutUs';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Schedule from './pages/Schedule';
-import Rooms from './pages/Rooms';
-import QRScanner from './pages/QRScanner';
-import Attendance from './pages/Attendance';
-import QRSuccess from './pages/QRSuccess';
+import Login from './pages/Login/Login';
+import AboutUs from './pages/AboutUs/AboutUs';
+import Signup from './pages/SignUp/Signup';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Profile from './pages/Profile/Profile';
+import Schedule from './pages/Schedule/Schedule';
+import Rooms from './pages/Rooms/Rooms';
+import QRScanner from './pages/QrScanner/QRScanner';
+import Attendance from './pages/Attendance/Attendance';
+import QRSuccess from './pages/QrScanner/QRSuccess';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // --- Layouts ---

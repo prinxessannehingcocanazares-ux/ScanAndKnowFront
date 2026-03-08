@@ -1,17 +1,17 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import createSchedules from "../api/createSchedules";
-import { useAuth } from "../context/AuthContext";
-import getSchedulesByUserId from "../api/getSchedulesByUserId";
+import createSchedules from "../../api/createSchedules";
+import { useAuth } from "../../context/AuthContext";
+import getSchedulesByUserId from "../../api/getSchedulesByUserId";
 
-const LazyCalendar = lazy(() => import("../pages/subPages/LazyCalendar"));
+const LazyCalendar = lazy(() => import("./LazyCalendar"));
 const AddScheduleModal = lazy(
-  () => import("../pages/subPages/AddScheduleModal"),
+  () => import("./AddScheduleModal"),
 );
-const LazySnackbar = lazy(() => import("../pages/subPages/LazySnackbar"));
+const LazySnackbar = lazy(() => import("../../utility/LazySnackbar"));
 const LazyViewScheduleModal = lazy(
-  () => import("../pages/subPages/ViewScheduleModal"),
+  () => import("./ViewScheduleModal"),
 );
 
 const Schedule = () => {
@@ -110,7 +110,6 @@ const Schedule = () => {
     ScheduleUserId: user?.id || null,
     ScheduleRoomId: room || null,
   };
-console.log("Submitting schedule with payload:", payload);
   try {
     const { VITE_CREATESCHEDULE_ENDPOINT } = window.__ENV__ || {};
 
@@ -120,8 +119,7 @@ console.log("Submitting schedule with payload:", payload);
     );
 
     const result = saveResponse.data;
-    console.log("Schedule creation response:", result);
-
+    
     if (Array.isArray(result)) {
       const newEvents = result.map((item) => {
         const dayString = getDayString(item.scheduleDay);

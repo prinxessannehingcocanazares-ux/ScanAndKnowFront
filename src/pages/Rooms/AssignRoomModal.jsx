@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import getAvailableRooms from "../../api/getAvailableRooms";
 import updateScheduleById from "../../api/updateScheduleById";
 
-const LazySnackbar = lazy(() => import("../../pages/subPages/LazySnackbar"));
+const LazySnackbar = lazy(() => import("../../utility/LazySnackbar"));
 
 const AssignRoomModal = ({ schedule, onClose, onRoomAssigned }) => {
   if (!schedule) return null;

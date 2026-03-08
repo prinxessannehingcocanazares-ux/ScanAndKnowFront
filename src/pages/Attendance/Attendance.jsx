@@ -2,10 +2,10 @@ import { Search, FileText } from "lucide-react";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import { useState, useEffect } from "react";
-import getSchedulesByUserId from "../api/getSchedulesByUserId";
-import { useAuth } from "../context/AuthContext";
-import LazySnackbar from "../pages/subPages/LazySnackbar";
-import getRoomById from "../api/getRoomById";
+import getSchedulesByUserId from "../../api/getSchedulesByUserId";
+import { useAuth } from "../../context/AuthContext";
+import LazySnackbar from "../../utility/LazySnackbar";
+import getRoomById from "../../api/getRoomById";
 
 const Attendance = () => {
   const { user } = useAuth();
@@ -31,7 +31,6 @@ const Attendance = () => {
       );
 
       const data = response.data || [];
-      console.log("Fetched schedules:", data);
 
       // Fetch room info for each unique roomId
       const uniqueRoomIds = [...new Set(data.map((s) => s.scheduleRoomId).filter(Boolean))];

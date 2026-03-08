@@ -1,17 +1,17 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, Tab, Badge } from "@mui/material";
-import getDepartments from "../api/getDepartments";
-import getRooms from "../api/getRooms";
-import getSchedulesByUserId from "../api/getSchedulesByUserId";
-import LazySnackbar from "../pages/subPages/LazySnackbar";
-import { useAuth } from "../context/AuthContext";
+import getDepartments from "../../api/getDepartments";
+import getRooms from "../../api/getRooms";
+import getSchedulesByUserId from "../../api/getSchedulesByUserId";
+import LazySnackbar from "../../utility/LazySnackbar";
+import { useAuth } from "../../context/AuthContext";
 
 const RoomDetailsDrawer = lazy(
-  () => import("../pages/subPages/RoomDetailsDrawer"),
+  () => import("./RoomDetailsDrawer"),
 );
-const RoomsTab = lazy(() => import("../pages/subPages/RoomsTab"));
+const RoomsTab = lazy(() => import("./RoomsTab"));
 const UnassignedSchedulesTab = lazy(
-  () => import("../pages/subPages/UnassignedSchedulesTab"),
+  () => import("./UnassignedSchedulesTab"),
 );
 
 const Rooms = () => {

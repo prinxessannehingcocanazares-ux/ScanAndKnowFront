@@ -1,8 +1,8 @@
 import { QrCode, Calendar, ClipboardCheck, Phone, Mail } from "lucide-react";
-import LandingNavbar from "../components/LandingNavbar";
-import melvin from "../images/melvin.jpg";
-import princess from "../images/princess.jpg";
-import FacebookLogo from "../images/FacebookLogo.jpg";
+import LandingNavbar from "../../components/LandingNavbar";
+import melvin from "../../images/melvin.jpg";
+import princess from "../../images/princess.jpg";
+import FacebookLogo from "../../images/FacebookLogo.jpg";
 
 const AboutUs = () => {
   const features = [

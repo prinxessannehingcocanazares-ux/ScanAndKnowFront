@@ -1,7 +1,6 @@
 import { DoorOpen, User } from "lucide-react";
 
 const RoomsTab = ({ departments, rooms, schedules, setSelectedRoom }) => {
-  console.log("Schedules:", schedules);
   return (
     <>
       {departments.map((dept) => {

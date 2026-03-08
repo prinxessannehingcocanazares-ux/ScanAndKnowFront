@@ -10,8 +10,8 @@ import {
   Box,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import logInApi from "../api/loginApi";
-import { useAuth } from "../context/AuthContext";
+import logInApi from "../../api/loginApi";
+import { useAuth } from "../../context/AuthContext";
 import { Snackbar, Alert } from "@mui/material";
 
 const Login = () => {

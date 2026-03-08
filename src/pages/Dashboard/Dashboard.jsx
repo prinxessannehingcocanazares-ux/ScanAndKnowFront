@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext'; // adjust path if needed
+import { useAuth } from '../../context/AuthContext'; // adjust path if needed
 import { DoorOpen, CheckCircle, AlertCircle, Settings, MoreVertical, X } from 'lucide-react';
-import cn from '../utility/cn'; // adjust path according to your project structure
+import cn from '../../utility/cn'; // adjust path according to your project structure
 
 // Example mock data, replace with your actual data source
 const mockDashboardRooms = [

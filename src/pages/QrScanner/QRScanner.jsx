@@ -1,6 +1,6 @@
-import { useAuth } from "../context/AuthContext";
-import AdminQRView from "../pages/subPages/AdminQRView";
-import UserScannerView from "../pages/subPages/UserScannerView";
+import { useAuth } from "../../context/AuthContext";
+import AdminQRView from "./AdminQRView";
+import UserScannerView from "./UserScannerView";
 
 const QRScanner = () => {
   const { user } = useAuth();
