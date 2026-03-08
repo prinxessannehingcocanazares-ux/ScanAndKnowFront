@@ -133,7 +133,7 @@ const Rooms = () => {
               badgeContent={unassignedSchedules.length}
               max={99}
             >
-              Schedules
+              UnAssigned
             </Badge>
           }
         />
