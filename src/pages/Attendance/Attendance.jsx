@@ -49,8 +49,9 @@ const Attendance = () => {
 
       // Map schedules with proper room code
       const mappedSchedules = data.map((item) => {
-        const start = item.scheduleStart ? new Date(item.scheduleStart) : null;
-        const end = item.scheduleEnd ? new Date(item.scheduleEnd) : null;
+  const start = item.scheduleStart ? new Date(new Date(item.scheduleStart).getTime() + 8 * 60 * 60 * 1000) : null;
+const end = item.scheduleEnd ? new Date(new Date(item.scheduleEnd).getTime() + 8 * 60 * 60 * 1000) : null;
+        
 
         let duration = "";
         if (start && end) {
