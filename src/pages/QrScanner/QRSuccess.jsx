@@ -48,6 +48,8 @@ const RoomPayload = () => {
 
       const data = response.data || [];
 
+      console.log("scheds: ",response.data);
+      console.log("payload room id: ", payload.roomId);
       // Only schedules for this room AND with scheduleEndTime null or empty
       const roomSchedules = data.filter(
         (s) =>
