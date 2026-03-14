@@ -133,7 +133,11 @@ const Rooms = () => {
               badgeContent={unassignedSchedules.length}
               max={99}
             >
+<<<<<<< HEAD
               UnScheduled
+=======
+              UnAssigned
+>>>>>>> be8bdeb6d6fe9de70381c000c9da0348d8a166af
             </Badge>
           }
         />
