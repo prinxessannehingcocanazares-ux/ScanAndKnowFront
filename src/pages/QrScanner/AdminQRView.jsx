@@ -7,12 +7,20 @@ import getRooms from "../../api/getRooms";
 const AdminQRView = () => {
   const [departments, setDepartments] = useState([]);
   const [rooms, setRooms] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
-  const showSnackbar = (message, severity = "error") => setSnackbar({ open: true, message, severity });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, open: false }));
+
+  const showSnackbar = (message, severity = "error") =>
+    setSnackbar({ open: true, message, severity });
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -20,6 +28,7 @@ const AdminQRView = () => {
         setLoading(true);
         const { VITE_GETDEPARTMENTS_ENDPOINT } = window.__ENV__ || {};
         const res = await getDepartments.post(VITE_GETDEPARTMENTS_ENDPOINT);
+
         setDepartments(res.data || []);
       } catch (err) {
         showSnackbar("Failed to fetch departments");
@@ -37,6 +46,7 @@ const AdminQRView = () => {
         setLoading(true);
         const { VITE_GETROOMS_ENDPOINT } = window.__ENV__ || {};
         const res = await getRooms.post(VITE_GETROOMS_ENDPOINT);
+
         setRooms(res.data || []);
       } catch (err) {
         showSnackbar("Failed to fetch rooms");
@@ -48,15 +58,10 @@ const AdminQRView = () => {
     fetchRooms();
   }, []);
 
-  const groupedRooms = rooms.reduce((acc, room) => {
-    const dept =
-      departments.find((d) => d.departmentId === room.roomDepartmentId)?.departmentCollegeName ||
-      "Unknown Department";
-
-    if (!acc[dept]) acc[dept] = [];
-    acc[dept].push(room);
-    return acc;
-  }, {});
+  const filteredRooms =
+    selectedDepartment === "all"
+      ? rooms
+      : rooms.filter((room) => room.roomDepartmentId === selectedDepartment);
 
   const downloadQR = (roomId, roomName, departmentName) => {
     const canvas = document.getElementById(`qr-${roomId}`);
@@ -72,18 +77,44 @@ const AdminQRView = () => {
     link.click();
   };
 
+  const selectedDepartmentName =
+    departments.find((d) => d.departmentId === selectedDepartment)
+      ?.departmentCollegeName || "";
+
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold mb-8">Room QR Codes</h2>
+      <h2 className="text-xl font-bold mb-6">Room QR Codes</h2>
 
-      {Object.entries(groupedRooms).map(([department, rooms]) => (
-        <div key={department} className="mb-10">
+      {/* Department Dropdown */}
+      <div className="mb-8">
+        <select
+          value={selectedDepartment}
+          onChange={(e) =>
+            setSelectedDepartment(
+              e.target.value === "all" ? "all" : Number(e.target.value),
+            )
+          }
+          className="border p-2 rounded-lg"
+        >
+          <option value="all">Select All</option>
+
+          {departments.map((dept) => (
+            <option key={dept.departmentId} value={dept.departmentId}>
+              {dept.departmentCollegeName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* QR Codes */}
+      {selectedDepartment && (
+        <>
           <h3 className="text-lg font-bold text-indigo-600 mb-4">
-            {department}
+            {selectedDepartmentName}
           </h3>
 
           <div className="grid grid-cols-3 gap-6">
-            {rooms.map((room) => (
+            {filteredRooms.map((room) => (
               <div
                 key={room.id}
                 className="bg-white p-6 rounded-xl shadow text-center"
@@ -93,9 +124,9 @@ const AdminQRView = () => {
                 <QRCodeCanvas
                   id={`qr-${room.id}`}
                   value={JSON.stringify({
-                    roomId: room.roomId, // the actual room ID
-                    roomCode: room.roomCode, // room code or name
-                    roomName: room.roomName || room.roomCode, // optional: human-readable name
+                    roomId: room.roomId,
+                    roomCode: room.roomCode,
+                    roomName: room.roomName || room.roomCode,
                     roomCapacity: room.roomCapacity,
                     roomDepartmentId: room.roomDepartmentId,
                     qrKey: "scanandknow-qr",
@@ -105,7 +136,11 @@ const AdminQRView = () => {
 
                 <button
                   onClick={() =>
-                    downloadQR(room.id, room.roomCode || room.name, department)
+                    downloadQR(
+                      room.id,
+                      room.roomCode || room.name,
+                      selectedDepartmentName,
+                    )
                   }
                   className="mt-4 text-xs px-3 py-1 bg-indigo-600 text-white rounded-lg"
                 >
@@ -114,8 +149,8 @@ const AdminQRView = () => {
               </div>
             ))}
           </div>
-        </div>
-      ))}
+        </>
+      )}
 
       <Snackbar
         open={snackbar.open}

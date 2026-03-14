@@ -1,5 +1,5 @@
 window.__ENV__ = {
-  VITE_IS_TEST: "false", // Set to "true" for testing, "false" for production
+  VITE_IS_TEST: "true", // Set to "true" for testing, "false" for production
 
   // Base URLS for API
   VITE_API_URL_TEST: "https://localhost:7236",
@@ -20,4 +20,6 @@ window.__ENV__ = {
   VITE_GETROOMBYID_ENDPOINT: "/api/User/GetRoomById",
   VITE_UPDATESTARTOREND_ENDPOINT: "/api/User/UpdateStartOrEnd",
   VITE_UPDATEUSER_ENDPOINT: "/api/User/UpdateUser",
+  VITE_GETAllSCHEDULES_ENDPOINT: "api/User/GetAllSchedules",
+  VITE_DELETESCHEDULEBYID_ENDPOINT: "api/User/DeleteScheduleById"
 }

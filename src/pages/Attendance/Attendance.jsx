@@ -27,18 +27,22 @@ const Attendance = () => {
     try {
       const { VITE_GETSCHEDULES_ENDPOINT } = window.__ENV__ || {};
       const response = await getSchedulesByUserId.post(
-        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`
+        `${VITE_GETSCHEDULES_ENDPOINT}?id=${user.id}`,
       );
 
       const data = response.data || [];
 
       // Fetch room info for each unique roomId
-      const uniqueRoomIds = [...new Set(data.map((s) => s.scheduleRoomId).filter(Boolean))];
+      const uniqueRoomIds = [
+        ...new Set(data.map((s) => s.scheduleRoomId).filter(Boolean)),
+      ];
       const roomMap = {};
       for (const roomId of uniqueRoomIds) {
         try {
           const { VITE_GETROOMBYID_ENDPOINT } = window.__ENV__ || {};
-          const roomResp = await getRoomById.post(`${VITE_GETROOMBYID_ENDPOINT}?id=${roomId}`);
+          const roomResp = await getRoomById.post(
+            `${VITE_GETROOMBYID_ENDPOINT}?id=${roomId}`,
+          );
           roomMap[roomId] = roomResp.data?.roomCode || `Room ${roomId}`;
         } catch (err) {
           console.error(`Failed to fetch room ${roomId}`, err);
@@ -49,15 +53,22 @@ const Attendance = () => {
 
       // Map schedules with proper room code
       const mappedSchedules = data.map((item) => {
-  const start = item.scheduleStart ? new Date(new Date(item.scheduleStart).getTime() + 8 * 60 * 60 * 1000) : null;
-const end = item.scheduleEnd ? new Date(new Date(item.scheduleEnd).getTime() + 8 * 60 * 60 * 1000) : null;
-        
+        const start = item.scheduleStart
+          ? new Date(
+              new Date(item.scheduleStart).getTime() + 8 * 60 * 60 * 1000,
+            )
+          : null;
+        const end = item.scheduleEnd
+          ? new Date(new Date(item.scheduleEnd).getTime() + 8 * 60 * 60 * 1000)
+          : null;
 
         let duration = "";
         if (start && end) {
           const durationMs = end - start;
           const hours = Math.floor(durationMs / (1000 * 60 * 60));
-          const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+          const minutes = Math.floor(
+            (durationMs % (1000 * 60 * 60)) / (1000 * 60),
+          );
           duration = `${hours}h ${minutes}m`;
         }
 
@@ -65,7 +76,9 @@ const end = item.scheduleEnd ? new Date(new Date(item.scheduleEnd).getTime() + 8
           id: item.scheduleId,
           date: item.scheduleDay,
           subject: item.scheduleSubject,
-          room: item.scheduleRoomId ? roomMap[item.scheduleRoomId] : "Not Assigned",
+          room: item.scheduleRoomId
+            ? roomMap[item.scheduleRoomId]
+            : "Not Assigned",
           timeIn: start ? format(start, "hh:mm a") : "--:--",
           timeOut: end ? format(end, "hh:mm a") : "--:--",
           duration,
@@ -75,7 +88,9 @@ const end = item.scheduleEnd ? new Date(new Date(item.scheduleEnd).getTime() + 8
       setSchedules(mappedSchedules);
     } catch (error) {
       console.error("Error fetching schedules:", error);
-      setSnackbarMessage(error.response?.data?.message || "Failed to fetch schedules");
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to fetch schedules",
+      );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -91,7 +106,7 @@ const end = item.scheduleEnd ? new Date(new Date(item.scheduleEnd).getTime() + 8
   const filteredLogs = schedules.filter(
     (log) =>
       log.subject?.toLowerCase().includes(search.toLowerCase()) ||
-      log.room?.toLowerCase().includes(search.toLowerCase())
+      log.room?.toLowerCase().includes(search.toLowerCase()),
   );
 
   /* ---------------- EXPORT ---------------- */

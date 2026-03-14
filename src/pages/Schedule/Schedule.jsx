@@ -227,7 +227,7 @@ const Schedule = () => {
               ref={calendarRef}
               initialView={currentView}
               selectable
-              editable
+              editable = {false}
               events={schedules}
               height="auto"
               slotMinTime="07:00:00"
