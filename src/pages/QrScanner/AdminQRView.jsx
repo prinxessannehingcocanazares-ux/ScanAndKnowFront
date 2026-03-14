@@ -142,6 +142,7 @@ const AdminQRView = () => {
                       roomCapacity: room.roomCapacity,
                       roomDepartmentId: room.roomDepartmentId,
                       qrKey: "scanandknow-qr",
+                      qrDate: new Date().toISOString().split("T")[0],
                     })}
                     size={160}
                   />
